@@ -10,3 +10,4 @@ load_dotenv()
 
 # Expose the module's objects
 from .api_wrapper import LLMWrapper
+from .documents import DocumentBase

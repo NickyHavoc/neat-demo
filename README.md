@@ -1,4 +1,4 @@
-# python_template
+# Configurable Chat Agent
 
 Repository with quickly configurable chat agent on your own data.
 
