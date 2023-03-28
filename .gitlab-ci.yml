@@ -1,0 +1,12 @@
+stages:
+  - test
+
+lint_and_test:
+  stage: test
+  interruptible: true
+  image: python:3.9
+  script:
+    - pip install -e .
+    - pre-commit install
+    - pre-commit run --all-files
+    - pytest
