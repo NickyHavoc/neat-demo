@@ -4,7 +4,7 @@ import re
 
 from pathlib import Path
 from typing import List, Optional, Sequence, Tuple
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
 from aleph_alpha_client import (
     Prompt,
     SemanticEmbeddingRequest,
@@ -184,7 +184,7 @@ class DocumentSearchResult:
         return [res[1] for res in top_k_res]
 
 
-class DocumentBase:
+class DocumentMinion:
     CHUNK_STEPS = [["\n\n"], ["\n"], [".", "!", "?"], [",", ":", "-"], [" "], None]
 
     def __init__(
@@ -236,20 +236,6 @@ class DocumentBase:
             if d.ident == ident:
                 return d
 
-    def _embed_query(self, text: str):
-        request = self.wrapper.build_aleph_alpha_request(
-            request_object=SemanticEmbeddingRequest(
-                prompt=Prompt.from_text(text),
-                representation=SemanticRepresentation.Query,
-                compress_to_size=128,
-            ),
-            model="luminous-base",
-        )
-        response: SemanticEmbeddingResponse = self.wrapper.aleph_alpha_request(
-            request=request
-        )
-        return response.embedding
-
     # Set of functions to load exiting document embeddings and see if anything changed.
     def _embed_documents(self, texts: List[str]):
         requests = [
@@ -268,22 +254,8 @@ class DocumentBase:
         )
         return [response.embedding for response in responses]
 
-    def _get_documents_and_save_cache(self, new_documents: List[Document]):
-        if self.cache_file.exists():
-            documents = self._load_documents_with_embeddings(
-                new_documents=new_documents
-            )
-        else:
-            documents = self._get_new_documents_with_embeddings(new_documents)
-
-        with open(self.cache_file, "w", encoding="UTF-8") as f:
-            json.dump([d.as_json() for d in documents], f, indent=4)
-
-        return documents
-
     def _add_embeddings_for_document(self, document: Document):
         chunk_texts = [c.text for c in document.chunks]
-
         embeddings = self._embed_documents(texts=chunk_texts)
         document.add_embeddings(embeddings=embeddings)
 
@@ -304,19 +276,17 @@ class DocumentBase:
         cached_document_set = set(
             Document.from_json(document_json) for document_json in cache_json
         )
-        new_document_hashes = set(d.ident for d in new_documents)
+        new_document_idents = set(d.ident for d in new_documents)
 
         updated_docs = []
-        for old_doc in tqdm(
-            cached_document_set, "Checking if old documents are still valid..."
-        ):
-            old_doc_hash = old_doc.ident
-            if old_doc_hash in new_document_hashes:
-                new_document_hashes.remove(old_doc_hash)
+        for old_doc in cached_document_set:
+            old_doc_ident = old_doc.ident
+            if old_doc_ident in new_document_idents:
+                new_document_idents.remove(old_doc_ident)
                 updated_docs.append(old_doc)
 
         documents_yet_to_be_embedded = [
-            d for d in new_documents if d.ident in new_document_hashes
+            d for d in new_documents if d.ident in new_document_idents
         ]
         if documents_yet_to_be_embedded:
             additional_documents_with_embeddings = (
@@ -328,15 +298,39 @@ class DocumentBase:
 
         return updated_docs
 
+    def _get_documents_and_save_cache(self, new_documents: List[Document]):
+        if self.cache_file.exists():
+            documents = self._load_documents_with_embeddings(
+                new_documents=new_documents
+            )
+        else:
+            documents = self._get_new_documents_with_embeddings(new_documents)
+
+        with open(self.cache_file, "w", encoding="UTF-8") as f:
+            json.dump([d.as_json() for d in documents], f, indent=4)
+
+        return documents
+
+    def _embed_query(self, text: str):
+        request = self.wrapper.build_aleph_alpha_request(
+            request_object=SemanticEmbeddingRequest(
+                prompt=Prompt.from_text(text),
+                representation=SemanticRepresentation.Query,
+                compress_to_size=128,
+            ),
+            model="luminous-base",
+        )
+        response: SemanticEmbeddingResponse = self.wrapper.aleph_alpha_request(
+            request=request
+        )
+        return response.embedding
+
     def score_query(
         self,
         query: Optional[str] = None,
-        query_embedding: Optional[Sequence[float]] = None,
         sort_descending: bool = True,
     ):
-        assert bool(query) != bool(query_embedding), "Must provide exactly one of query, query_embedding."
-        if not query_embedding:
-            query_embedding = self._embed_query(query)
+        query_embedding = self._embed_query(query)
 
         results = DocumentSearchResult()
         for document in self.documents:

@@ -22,7 +22,7 @@ conda activate configurable_chat_agent
 
 ## Install editable with ssh
 
-```bash
+```console
 git clone git@github.com:NiklasFinken/configurable-chat-agent.git
 cd configurable_chat_agent
 pip install -e .
@@ -30,7 +30,7 @@ pip install -e .
 
 ## Install editable with https
 
-```bash
+```console
 git clone https://github.com/NiklasFinken/configurable-chat-agent.git
 cd configurable_chat_agent
 pip install -e .
@@ -38,19 +38,43 @@ pip install -e .
 
 ## Install as package with ssh
 
-```bash
+```console
 pip install --upgrade git@github.com:NiklasFinken/configurable-chat-agent.git
 ```
 
 ## Install as package with https
 
-```bash
+```console
 pip install --upgrade git+https://github.com/NiklasFinken/configurable-chat-agent.git
 ```
 
 ## Create your .env file
 
 In order to set credentials to the api that should never be pushed to a repository, copy the file ".env_example", rename the copy to ".env" and paste your personal API token.
+
+
+# Run the server & frontend
+
+Once you installed the necessary python packages, including this module, you can start the frontend and server.
+
+```console
+cd svelte-chat-app
+npm install
+npm install axios
+```
+
+Start the frontend by running:
+
+```console
+npm run dev
+```
+
+We also need to start the backend...
+
+```console
+uvicorn main:app --reload
+```
+
 
 # Add new requirements
 

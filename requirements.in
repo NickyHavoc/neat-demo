@@ -4,3 +4,5 @@ python-dotenv # used to set environment variables while also making use of a .en
 tqdm
 aleph-alpha-client
 openai
+fastapi
+uvicorn

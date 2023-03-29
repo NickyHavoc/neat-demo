@@ -9,5 +9,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Expose the module's objects
+from .agent_hangout import AgentHangout
 from .api_wrapper import LLMWrapper
-from .documents import DocumentBase
+from .document_minion import DocumentMinion
