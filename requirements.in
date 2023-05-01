@@ -1,8 +1,0 @@
-pip-tools # for requirements compilation
-pytest # testing
-python-dotenv # used to set environment variables while also making use of a .env file
-tqdm
-aleph-alpha-client
-openai
-fastapi
-uvicorn
