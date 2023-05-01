@@ -1,7 +1,7 @@
 from typing import List
 from aleph_alpha_client import CompletionRequest, CompletionResponse, Prompt
 
-from configurable_chat_agent import LLMWrapper
+from neat_demo import LLMWrapper
 
 
 WRAPPER = LLMWrapper()

@@ -15,37 +15,37 @@ An own environment is advisable so that dependencies are not mixed with other pr
 When conda is installed and loaded you can use the following commands to create a new conda environment.
 
 ```console
-conda create -n configurable_chat_agent python=3.9
+conda create -n neat_demo python=3.9
 y
-conda activate configurable_chat_agent
+conda activate neat_demo
 ```
 
 ## Install editable with ssh
 
 ```console
-git clone git@github.com:NiklasFinken/configurable-chat-agent.git
-cd configurable_chat_agent
+git clone git@github.com:NiklasFinken/neat-demo.git
+cd neat_demo
 pip install -e .
 ```
 
 ## Install editable with https
 
 ```console
-git clone https://github.com/NiklasFinken/configurable-chat-agent.git
-cd configurable_chat_agent
+git clone https://github.com/NiklasFinken/neat-demo.git
+cd neat_demo
 pip install -e .
 ```
 
 ## Install as package with ssh
 
 ```console
-pip install --upgrade git@github.com:NiklasFinken/configurable-chat-agent.git
+pip install --upgrade git@github.com:NiklasFinken/neat-demo.git
 ```
 
 ## Install as package with https
 
 ```console
-pip install --upgrade git+https://github.com/NiklasFinken/configurable-chat-agent.git
+pip install --upgrade git+https://github.com/NiklasFinken/neat-demo.git
 ```
 
 ## Create your .env file

@@ -18,8 +18,8 @@ def requirements():
 
 
 setup(
-    name="configurable_chat_agent",
-    url="https://github.com/NiklasFinken/configurable-chat-agent.git",
+    name="neat_demo",
+    url="https://github.com/NiklasFinken/neat-demo.git",
     author="Niklas Finken",
     author_email="niklasfinken@me.com",
     package_dir={"": "src"},

@@ -1,11 +1,9 @@
 from pathlib import Path
-from configurable_chat_agent import DocumentMinion, LLMWrapper
+from neat_demo import AgentHangout
 
-wrapper = LLMWrapper()
-doc_base = DocumentMinion(
-    wrapper=wrapper,
-    path=Path(__file__).parent / "example_agent_config"
-)
-search_res = doc_base.score_query(query="I have a question concerning our income statement.")
+
+documents_dir = Path(__file__).parent / "example_documents"
+agent_hangout = AgentHangout(documents_dir)
+print(agent_hangout.get_entry_message())
 
 print("")
