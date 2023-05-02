@@ -1,9 +1,11 @@
 from pathlib import Path
-from neat_demo import AgentHangout
+
+from documents import DocumentHandler
 
 
-documents_dir = Path(__file__).parent / "example_documents"
-agent_hangout = AgentHangout(documents_dir)
-print(agent_hangout.get_entry_message())
-
+documents_path = Path(__file__).parent / "example_docs"
+doc_handler = DocumentHandler()
+doc_handler.instantiate_database(
+    documents_path=documents_path
+)
 print("")

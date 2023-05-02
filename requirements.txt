@@ -1,6 +1,7 @@
 pip-tools
 pytest
 python-dotenv
+pandas
 fastapi
 uvicorn
 pandas
@@ -8,3 +9,6 @@ openai
 qdrant-client
 aleph-alpha-client
 PyPDF2
+pycryptodome
+python-docx
+python-pptx
