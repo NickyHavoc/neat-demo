@@ -1,0 +1,14 @@
+pip-tools
+pytest
+python-dotenv
+pandas
+fastapi
+uvicorn
+pandas
+langchain
+openai
+aleph-alpha-client
+PyPDF2
+pycryptodome
+python-docx
+python-pptx

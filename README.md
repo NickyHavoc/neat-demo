@@ -26,32 +26,18 @@ Then proceed to install the package.
 pip install -e .
 ```
 
-## Install editable with ssh
-
-```console
-git clone git@github.com:NiklasFinken/neat-demo.git
-cd neat_demo
-pip install -e .
-```
-
 ## Install editable with https
 
 ```console
-git clone https://github.com/NiklasFinken/neat-demo.git
+git clone https://github.com/NickyHavoc/neat-demo.git
 cd neat_demo
 pip install -e .
-```
-
-## Install as package with ssh
-
-```console
-pip install --upgrade git@github.com:NiklasFinken/neat-demo.git
 ```
 
 ## Install as package with https
 
 ```console
-pip install --upgrade git+https://github.com/NiklasFinken/neat-demo.git
+pip install --upgrade git+https://github.com/NickyHavoc/neat-demo.git
 ```
 
 ## Create your .env file
