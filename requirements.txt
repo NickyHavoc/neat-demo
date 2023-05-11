@@ -6,7 +6,6 @@ fastapi
 uvicorn
 pandas
 openai
-qdrant-client
 aleph-alpha-client
 PyPDF2
 pycryptodome
