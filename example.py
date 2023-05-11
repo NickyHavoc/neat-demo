@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+from langchain.tools import DuckDuckGoSearchRun
+
 from documents import DocumentHandler
 from brain import Brain, DocumentSearchTool
 
@@ -11,12 +13,15 @@ doc_handler.instantiate_database(
     documents_path=documents_path,
     update=False
 )
-search_tool = DocumentSearchTool(
-    document_handler=doc_handler,
-    name="Search",
-    description="useful for retrieving information about EON."
-)
-brain = Brain(tools=[search_tool])
+tools = [
+    DuckDuckGoSearchRun(),
+    DocumentSearchTool(
+        document_handler=doc_handler,
+        name="EON Search",
+        description="useful for retrieving information about EON."
+    )
+]
+brain = Brain(tools=tools)
 
 while True:
     user_message = input()

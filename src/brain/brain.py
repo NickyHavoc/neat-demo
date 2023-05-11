@@ -6,7 +6,6 @@ from langchain.memory import ConversationBufferMemory
 from langchain.tools import BaseTool
 
 
-
 class Brain:
     def __init__(
         self,
