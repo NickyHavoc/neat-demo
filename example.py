@@ -1,13 +1,8 @@
 import os
 from pathlib import Path
 
-from langchain import LLMMathChain, SerpAPIWrapper
-from langchain.agents import AgentType, initialize_agent
-from langchain.chat_models import ChatOpenAI
-from langchain.tools import BaseTool, StructuredTool, Tool, tool
-
 from documents import DocumentHandler
-from brain import DocumentSearchTool
+from brain import Brain, DocumentSearchTool
 
 
 documents_path = Path(__file__).parent / "example_docs"
@@ -16,13 +11,14 @@ doc_handler.instantiate_database(
     documents_path=documents_path,
     update=False
 )
-
-llm = ChatOpenAI(temperature=0, openai_api_key=os.getenv("OPEN_AI_KEY"))
-search_tool = DocumentSearchTool(document_handler=doc_handler)
-agent = initialize_agent([search_tool], llm, agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION, verbose=True)
-
+search_tool = DocumentSearchTool(
+    document_handler=doc_handler,
+    name="Search",
+    description="useful for retrieving information about EON."
+)
+brain = Brain(tools=[search_tool])
 
 while True:
-    message = input()
-    answer = agent.run(message)
+    user_message = input()
+    answer = brain.reply_to(user_message=user_message)
     print(answer)
