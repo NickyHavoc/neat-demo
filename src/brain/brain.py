@@ -5,7 +5,6 @@ from langchain.chat_models import ChatOpenAI
 from langchain.memory import ConversationBufferMemory
 from langchain.tools import BaseTool
 
-
 class Brain:
     def __init__(
         self,
@@ -17,14 +16,14 @@ class Brain:
         self.agent = initialize_agent(
             tools=tools,
             llm=llm,
-            agent=AgentType.CHAT_CONVERSATIONAL_REACT_DESCRIPTION,
+            agent=AgentType.ZERO_SHOT_REACT_DESCRIPTION,
             verbose=True,
-            memory=memory
+            #memory=memory
         )
 
     def reply_to(self, user_message: str):
         try:
             answer = self.agent.run(user_message)
-        except:
+        except Exception as e:
             answer = "I made an error contemplating your query."
         return answer
