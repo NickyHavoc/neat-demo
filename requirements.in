@@ -13,3 +13,4 @@ pycryptodome
 python-docx
 python-pptx
 duckduckgo-search
+pre-commit

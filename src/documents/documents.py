@@ -36,6 +36,12 @@ class Document:
             hash_id=json["hash_id"]
         )
     
+    def get_excerpt(self):
+        excerpt = ""
+        for c in self.chunks[:5]:
+            excerpt += " ".join(c.content.split()[:20]) + "[...]"
+        return excerpt
+
     def serialize(self):
         return {
             self.hash_id: {
@@ -68,7 +74,7 @@ class DocumentSearchResult:
         self.best_chunks = sorted(best_chunks, key=lambda chunk_score: chunk_score[1], reverse=True)
 
 
-class DocumentHandler:
+class DocumentMinion:
     def __init__(
         self,
         database_path: Optional[Path] = None
@@ -83,6 +89,45 @@ class DocumentHandler:
 
         self.database_path.mkdir(parents=True, exist_ok=True)
         self.documents: Optional[List[Document]] = None
+        self.name: Optional[str] = None
+        self.description: Optional[str] = None
+
+    def get_description(
+        self
+    ) -> None:
+        document_text_excerpts = "\n".join(
+            d.get_excerpt() for d in self.documents[:10]
+        )
+        response = self.llm_wrapper.open_ai_chat_complete(
+            params={
+                "model": "gpt-3.5-turbo",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": """You are the head of a document library.
+You are presented with a list of texts from your library and seek to find out, what the topic of your library is."""
+                    },
+                    {
+                        "role": "user",
+                        "content": f"""Hey! I found books with these texts in your library:
+{document_text_excerpts}
+
+Can you write a short summary of what your library is about?
+Please use the following format:
+```
+<Database Title>
+<Database Summary>
+```"""
+                    }
+                ],
+                "temperature": 0
+            }
+        )
+        result: str= response["choices"][0]["message"]["content"]
+        res_tuple = result.strip().split("\n")
+        if len(res_tuple) != 2:
+            res_tuple = ("Database", result)
+        self.name, self.description = res_tuple
 
     @staticmethod
     def _collect_file_paths(folder_path: Path) -> List[Path]:
@@ -184,6 +229,7 @@ class DocumentHandler:
             raw_documents = self._load_raw_documents()
             documents = [self._document_from_raw(d, key) for key, d in raw_documents.items()]
         self.documents = documents
+        self.get_description()
         
     def score_chunks(self, embedded_query: List[float], threshold: float) -> List[DocumentSearchResult]:
         results = []

@@ -1,1 +1,1 @@
-from .document_handler import Document, DocumentHandler
+from .documents import Document, DocumentMinion
