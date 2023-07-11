@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/google/yapf
+    rev: v0.31.0
+    hooks:
+      - id: yapf
+        args: ["--style={based_on_style: google, indent_width: 4}"]
+
+  - repo: https://github.com/pre-commit/mirrors-autopep8
+    rev: v1.5.7  # Use the ref you want to point at
+    hooks:
+      - id: autopep8
+        args: ["--in-place", "--aggressive", "--aggressive"]

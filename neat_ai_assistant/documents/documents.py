@@ -35,7 +35,7 @@ class Document:
             path=Path(json["path"]),
             hash_id=json["hash_id"]
         )
-    
+
     def get_excerpt(self):
         excerpt = ""
         for c in self.chunks[:5]:
@@ -123,7 +123,7 @@ Please use the following format:
                 "temperature": 0
             }
         )
-        result: str= response["choices"][0]["message"]["content"]
+        result: str = response["choices"][0]["message"]["content"]
         res_tuple = result.strip().split("\n")
         if len(res_tuple) != 2:
             res_tuple = ("Database", result)
@@ -143,15 +143,15 @@ Please use the following format:
         if bool(file_path) == bool(string):
             raise TypeError("Must provide only one of file_path, string")
         sha256_hash = sha256()
-        
+
         if bool(file_path):
-            with open(file_path,"rb") as f:
-                for byte_block in iter(lambda: f.read(4096),b""):
+            with open(file_path, "rb") as f:
+                for byte_block in iter(lambda: f.read(4096), b""):
                     sha256_hash.update(byte_block)
         else:
             byte_string = string.encode()
             sha256_hash.update(byte_string)
-            
+
         return sha256_hash.hexdigest()
 
     def _create_document_object_from_file(self, file_path: Path, doc_hash_id: str) -> Document:
@@ -190,11 +190,11 @@ Please use the following format:
             )
 
     def _load_raw_documents(self) -> Dict[str, dict]:
-        documents_file = self.database_path / "documents.json"
-        if documents_file.exists():
-            with documents_file.open("r") as file:
-                return json.load(file)
-        return {}
+        all_documents = {}
+        for doc_file in self.database_path.glob("documents*.json"):
+            with doc_file.open("r") as file:
+                all_documents |= json.load(file)
+        return all_documents
 
     def _document_from_raw(self, document: dict, id: str) -> List[Document]:
         return Document(
@@ -224,15 +224,17 @@ Please use the following format:
                 documents.append(saved_document)
         return documents
 
-    def _save_documents(self, documents: List[Document]) -> None:
-        serialized_docs = {}
-        for d in documents:
-            serialized_docs |= d.serialize()
-        save_path = self.database_path / "documents.json"
-        with save_path.open("w") as file:
-            json.dump(serialized_docs, file, indent=4)
+    def _save_documents(self, documents: List[Document], max_documents_per_file: int = 50) -> None:
+        for i in range(0, len(documents), max_documents_per_file):
+            batch = documents[i: i + max_documents_per_file]
+            serialized_docs = {}
+            for d in batch:
+                serialized_docs |= d.serialize()
+            save_path = self.database_path / f"documents{i//max_documents_per_file}.json"
+            with save_path.open("w") as file:
+                json.dump(serialized_docs, file, indent=4)
 
-    def instantiate_database(self, documents_path: Path, update: bool=True):
+    def instantiate_database(self, documents_path: Path, update: bool = True):
         if update:
             documents = self._compare_documents(documents_path)
             self._save_documents(documents)
@@ -241,7 +243,7 @@ Please use the following format:
             documents = [self._document_from_raw(d, key) for key, d in raw_documents.items()]
         self.documents = documents
         self.get_description()
-        
+
     def score_chunks(self, embedded_query: List[float], threshold: float) -> List[DocumentSearchResult]:
         results = []
         for d in self.documents:

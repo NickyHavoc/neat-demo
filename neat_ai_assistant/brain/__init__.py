@@ -1,2 +1,2 @@
-from .brain import Brain
+from .agent import NeatAgent
 from .tools import DocumentSearchTool
