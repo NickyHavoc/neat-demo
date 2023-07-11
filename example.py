@@ -1,17 +1,17 @@
-import os
 from pathlib import Path
 
 from langchain.tools import DuckDuckGoSearchRun
 
-from documents import DocumentMinion
-from brain import Brain, DocumentSearchTool
+from neat_ai_assistant.documents.documents import DocumentMinion
+from neat_ai_assistant.brain.brain import Brain
+from neat_ai_assistant.brain.tools import DocumentSearchTool
 
 
 documents_path = Path(__file__).parent / "example_docs"
 doc_minion = DocumentMinion()
 doc_minion.instantiate_database(
     documents_path=documents_path,
-    update=False
+    update=True
 )
 tools = [
     DuckDuckGoSearchRun(),

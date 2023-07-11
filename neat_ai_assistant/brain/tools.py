@@ -3,7 +3,7 @@ from langchain.tools import BaseTool, StructuredTool, Tool, tool
 from langchain.callbacks.manager import AsyncCallbackManagerForToolRun
 from pydantic import BaseModel, Field
 
-from documents import DocumentMinion
+from ..documents.documents import DocumentMinion
 
 
 class DocumentSearchTool(BaseTool):

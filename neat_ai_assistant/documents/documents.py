@@ -7,7 +7,7 @@ from typing import Dict, List, Optional, Tuple
 from aleph_alpha_client import Prompt, SemanticEmbeddingRequest, SemanticEmbeddingResponse, SemanticRepresentation
 from tqdm import tqdm
 
-from utils import LLMWrapper
+from ..utils.api_wrapper import LLMWrapper
 
 from .parser import Parser
 
@@ -139,17 +139,22 @@ Please use the following format:
         return all_file_paths
 
     @staticmethod
-    def _generate_hash_id(file_path: Path) -> str:
+    def _generate_hash_id(file_path: Optional[Path] = None, string: Optional[str] = None) -> str:
+        if bool(file_path) == bool(string):
+            raise TypeError("Must provide only one of file_path, string")
         sha256_hash = sha256()
         
-        with open(file_path,"rb") as f:
-            for byte_block in iter(lambda: f.read(4096),b""):
-                sha256_hash.update(byte_block)
+        if bool(file_path):
+            with open(file_path,"rb") as f:
+                for byte_block in iter(lambda: f.read(4096),b""):
+                    sha256_hash.update(byte_block)
+        else:
+            byte_string = string.encode()
+            sha256_hash.update(byte_string)
             
         return sha256_hash.hexdigest()
 
-    def _create_document_object_from_file(self, file_path: Path) -> Document:
-        doc_hash_id = self._generate_hash_id(file_path)
+    def _create_document_object_from_file(self, file_path: Path, doc_hash_id: str) -> Document:
         raw_chunks = self.parser.parse_file(file_path)
         return Document(
             chunks=[
@@ -205,15 +210,16 @@ Please use the following format:
         saved_documents = self._load_raw_documents()
         documents = []
         for file_path in tqdm(file_paths, desc="Parsing and embedding..."):
-            doc = self._create_document_object_from_file(file_path)
-            if doc.hash_id not in saved_documents:
+            doc_hash_id = self._generate_hash_id(file_path=file_path)
+            if doc_hash_id not in saved_documents:
+                doc = self._create_document_object_from_file(file_path, doc_hash_id)
                 self._add_document_embeddings(doc)
                 documents.append(doc)
             else:
-                raw_saved_document = saved_documents[doc.hash_id]
+                raw_saved_document = saved_documents[doc_hash_id]
                 saved_document = self._document_from_raw(
                     document=raw_saved_document,
-                    id=doc.hash_id
+                    id=doc_hash_id
                 )
                 documents.append(saved_document)
         return documents
