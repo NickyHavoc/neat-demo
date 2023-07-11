@@ -94,7 +94,8 @@ class DocumentSearchTool(Tool):
 
     def run(self, json_query: dict) -> str:
         results = self.document_minion.search(json_query["query"])
-        formatted_results = [r.best_chunks[0][0].content for r in results[:json_query["n"]]] if bool(results) else []
+        formatted_results = [
+            r.best_chunks[0][0].content for r in results[:json_query["n"]]] if bool(results) else []
         # Currently returns only best chunk per document -> desired?
         return self.build_tool_result(
             formatted_results

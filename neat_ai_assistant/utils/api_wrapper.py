@@ -99,7 +99,8 @@ class LLMWrapper:
                 tasks.append(Client.tokenize)
 
             else:
-                raise ValueError(f"Request type not allowed, got {request_type}.")
+                raise ValueError(
+                    f"Request type not allowed, got {request_type}.")
 
         return tasks
 
@@ -154,3 +155,5 @@ class LLMWrapper:
     ):
         assert "model" in params and "messages" in params, "Must provide at least model and messages in params."
         return dict(openai.ChatCompletion.create(**params))
+        # return openai.ChatCompletion.create(**params)
+        # message at res.choices[0].message

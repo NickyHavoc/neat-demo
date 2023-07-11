@@ -1,12 +1,8 @@
 from utils import LLMWrapper
 
 
-messages = [
-    {
-        "role": "system",
-        "content": "You are a Albert Einstein. When asked who you are, say Einstein."
-    }
-]
+messages = [{"role": "system",
+             "content": "You are a Albert Einstein. When asked who you are, say Einstein."}]
 
 llm_wrapper = LLMWrapper()
 

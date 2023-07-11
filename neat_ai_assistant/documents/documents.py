@@ -71,7 +71,10 @@ class DocumentSearchResult:
                 best_chunks.append(
                     (self.document.chunks[idx], score)
                 )
-        self.best_chunks = sorted(best_chunks, key=lambda chunk_score: chunk_score[1], reverse=True)
+        self.best_chunks = sorted(
+            best_chunks,
+            key=lambda chunk_score: chunk_score[1],
+            reverse=True)
 
 
 class DocumentMinion:
@@ -139,7 +142,9 @@ Please use the following format:
         return all_file_paths
 
     @staticmethod
-    def _generate_hash_id(file_path: Optional[Path] = None, string: Optional[str] = None) -> str:
+    def _generate_hash_id(
+            file_path: Optional[Path] = None,
+            string: Optional[str] = None) -> str:
         if bool(file_path) == bool(string):
             raise TypeError("Must provide only one of file_path, string")
         sha256_hash = sha256()
@@ -154,7 +159,8 @@ Please use the following format:
 
         return sha256_hash.hexdigest()
 
-    def _create_document_object_from_file(self, file_path: Path, doc_hash_id: str) -> Document:
+    def _create_document_object_from_file(
+            self, file_path: Path, doc_hash_id: str) -> Document:
         raw_chunks = self.parser.parse_file(file_path)
         return Document(
             chunks=[
@@ -181,8 +187,7 @@ Please use the following format:
             ) for c in document.chunks
         ]
         responses: List[SemanticEmbeddingResponse] = self.llm_wrapper.aleph_alpha_batch_request(
-            requests=request_dicts,
-        )
+            requests=request_dicts, )
         for idx, r in enumerate(responses):
             document.add_embedding_for_chunk(
                 chunk_idx=idx,
@@ -212,7 +217,8 @@ Please use the following format:
         for file_path in tqdm(file_paths, desc="Parsing and embedding..."):
             doc_hash_id = self._generate_hash_id(file_path=file_path)
             if doc_hash_id not in saved_documents:
-                doc = self._create_document_object_from_file(file_path, doc_hash_id)
+                doc = self._create_document_object_from_file(
+                    file_path, doc_hash_id)
                 self._add_document_embeddings(doc)
                 documents.append(doc)
             else:
@@ -224,13 +230,17 @@ Please use the following format:
                 documents.append(saved_document)
         return documents
 
-    def _save_documents(self, documents: List[Document], max_documents_per_file: int = 50) -> None:
+    def _save_documents(
+            self,
+            documents: List[Document],
+            max_documents_per_file: int = 50) -> None:
         for i in range(0, len(documents), max_documents_per_file):
             batch = documents[i: i + max_documents_per_file]
             serialized_docs = {}
             for d in batch:
                 serialized_docs |= d.serialize()
-            save_path = self.database_path / f"documents{i//max_documents_per_file}.json"
+            save_path = self.database_path / \
+                f"documents{i//max_documents_per_file}.json"
             with save_path.open("w") as file:
                 json.dump(serialized_docs, file, indent=4)
 
@@ -240,11 +250,18 @@ Please use the following format:
             self._save_documents(documents)
         else:
             raw_documents = self._load_raw_documents()
-            documents = [self._document_from_raw(d, key) for key, d in raw_documents.items()]
+            documents = [
+                self._document_from_raw(
+                    d,
+                    key) for key,
+                d in raw_documents.items()]
         self.documents = documents
         self.get_description()
 
-    def score_chunks(self, embedded_query: List[float], threshold: float) -> List[DocumentSearchResult]:
+    def score_chunks(
+            self,
+            embedded_query: List[float],
+            threshold: float) -> List[DocumentSearchResult]:
         results = []
         for d in self.documents:
             chunk_scores = [self.llm_wrapper.compute_cosine_similarity(
@@ -260,7 +277,10 @@ Please use the following format:
                 results.append(res)
         return sorted(results, key=lambda r: max(r.chunk_scores), reverse=True)
 
-    def search(self, question: str, threshold: float = 0.7) -> List[DocumentSearchResult]:
+    def search(
+            self,
+            question: str,
+            threshold: float = 0.7) -> List[DocumentSearchResult]:
         request_dict = self.llm_wrapper.build_aleph_alpha_request(
             request_object=SemanticEmbeddingRequest(
                 prompt=Prompt.from_text(
@@ -272,8 +292,7 @@ Please use the following format:
             model="luminous-base"
         )
         response: SemanticEmbeddingResponse = self.llm_wrapper.aleph_alpha_request(
-            request=request_dict,
-        )
+            request=request_dict, )
         results = self.score_chunks(
             embedded_query=response.embedding,
             threshold=threshold

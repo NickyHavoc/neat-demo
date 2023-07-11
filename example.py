@@ -17,7 +17,6 @@ tools = [
         document_minion=doc_minion
     )
 ]
-tools[0].run({"query": "What is the revenue of SAP", "n": 5})
 brain = NeatAgent(tools=tools)
 
 while True:

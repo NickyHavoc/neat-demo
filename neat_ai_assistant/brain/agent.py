@@ -14,7 +14,8 @@ class NeatAgent:
             raise TypeError("All tools must be of type tool.")
         serialized_tool_names = [t.serialized_name for t in tools]
         if len(set(serialized_tool_names)) != len(serialized_tool_names):
-            raise ValueError("There is an overlap in tool names (after serializing).")
+            raise ValueError(
+                "There is an overlap in tool names (after serializing).")
         self.tools = tools
         self.llm_wrapper = LLMWrapper()
 
@@ -30,7 +31,7 @@ class NeatAgent:
         return "\n".join(
             t.get_for_prompt() for t in self.tools
         )
-    
+
     def _get_tools_for_function_call(self) -> List[dict]:
         function_call_jsons = [t.get_for_function_call() for t in self.tools]
         for fcj in function_call_jsons:
@@ -65,7 +66,7 @@ class NeatAgent:
         tool_results: List[ToolResult] = []
         while not final_answer:
             prompt_message = f"""My question: {user_message}
-            
+
 Your turn!
 Decide the next action to choose. Pick from the available tools.
 
@@ -91,10 +92,10 @@ If you think you gathered all necessary information, generate a final answer"""
                 function_call_str = completion["choices"][0]["message"]["function_call"]["arguments"]
                 function_name = completion["choices"][0]["message"]["function_call"]["name"]
                 function_call_json = json.loads(function_call_str)
-                
+
                 thought = function_call_json.pop("thought")
                 print(f"\nNEAT AGENT THOUGHT: {thought}\n")
-                
+
                 tool_to_use = self._get_tool_by_name(function_name)
                 if bool(tool_to_use):
                     tool_result = tool_to_use.run(function_call_json)
@@ -105,4 +106,5 @@ If you think you gathered all necessary information, generate a final answer"""
             else:
                 final_answer = completion["choices"][0]["message"]["content"]
 
-        return f"FINAL ANSWER: {final_answer}"
+        print(f"FINAL ANSWER: {final_answer}")
+        return final_answer
