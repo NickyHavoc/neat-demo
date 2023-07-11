@@ -162,3 +162,5 @@ cython_debug/
 # vscode
 .vscode/
 
+# others
+.DS_Store

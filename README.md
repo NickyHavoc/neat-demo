@@ -3,41 +3,12 @@
 Repository with quickly configurable chat agent on your own data.
 
 
-# Installation
-
-This codebase can be installed as git clone and editable intall or as pip package.
-**Please git clone and install editable for training or running tests.**
-
-## Use a conda environment
-
-An own environment is advisable so that dependencies are not mixed with other projects.
-
-When conda is installed and loaded you can use the following commands to create a new conda environment.
-
-```console
-conda create -n neat_demo python=3.9
-y
-conda activate neat_demo
-```
-
-Then proceed to install the package.
-
-``` console
-pip install -e .
-```
-
 ## Install editable with https
 
 ```console
 git clone https://github.com/NickyHavoc/neat-demo.git
 cd neat_demo
 pip install -e .
-```
-
-## Install as package with https
-
-```console
-pip install --upgrade git+https://github.com/NickyHavoc/neat-demo.git
 ```
 
 ## Create your .env file

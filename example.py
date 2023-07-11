@@ -1,25 +1,24 @@
-import os
 from pathlib import Path
 
-from langchain.tools import DuckDuckGoSearchRun
-
-from documents import DocumentMinion
-from brain import Brain, DocumentSearchTool
+from neat_ai_assistant.documents.documents import DocumentMinion
+from neat_ai_assistant.brain.agent import NeatAgent
+from neat_ai_assistant.brain.tools import DocumentSearchTool, DuckDuckGoSearchTool
 
 
 documents_path = Path(__file__).parent / "example_docs"
 doc_minion = DocumentMinion()
 doc_minion.instantiate_database(
     documents_path=documents_path,
-    update=False
+    update=True
 )
 tools = [
-    DuckDuckGoSearchRun(),
+    DuckDuckGoSearchTool(),
     DocumentSearchTool.from_document_minion(
         document_minion=doc_minion
     )
 ]
-brain = Brain(tools=tools)
+tools[0].run({"query": "What is the revenue of SAP", "n": 5})
+brain = NeatAgent(tools=tools)
 
 while True:
     user_message = input()

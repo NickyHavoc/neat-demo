@@ -22,5 +22,3 @@ while True:
     message = dict(response["choices"][0]["message"])
     messages.append(message)
     print(message["content"])
-
-
