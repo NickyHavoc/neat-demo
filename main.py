@@ -4,8 +4,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from neat_ai_assistant.documents.documents import DocumentMinion
-from neat_ai_assistant.brain.agent import NeatAgent
-from neat_ai_assistant.brain.tools import DocumentSearchTool, DuckDuckGoSearchTool
+from neat_ai_assistant.agent.agent import NeatAgent
+from neat_ai_assistant.agent.tools import DocumentSearchTool, DuckDuckGoSearchTool
 
 
 app = FastAPI()

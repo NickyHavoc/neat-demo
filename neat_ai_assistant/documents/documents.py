@@ -126,7 +126,9 @@ Please use the following format:
                 "temperature": 0
             }
         )
-        result: str = response["choices"][0]["message"]["content"]
+        # message at res.choices[0].message
+
+        result: str = response.choices[0].message.content
         res_tuple = result.strip().split("\n")
         if len(res_tuple) != 2:
             res_tuple = ("Database", result)

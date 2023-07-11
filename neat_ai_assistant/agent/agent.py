@@ -1,8 +1,9 @@
 import json
+
 from typing import Dict, List, Optional
 
 from .tools import Tool, ToolResult
-from ..utils.api_wrapper import LLMWrapper
+from ..utils.api_wrapper import LLMWrapper, OpenAIChatCompletion, OpenAIMessage
 
 
 class NeatAgent:
@@ -50,13 +51,11 @@ class NeatAgent:
         self,
         messages: List[Dict[str, str]],
     ) -> dict:
-        system_message = {
-            "role": "system",
-            "content": "Only use the functions you have been provided with."
-        }
+        system_message = OpenAIMessage(role="system", content="Only use the functions you have been provided with.")
+        messages = [system_message] + messages
         return {
             "model": "gpt-4",
-            "messages": [system_message] + messages,
+            "messages": messages,
             "functions": self._get_tools_for_function_call()
         }
 
@@ -64,47 +63,47 @@ class NeatAgent:
         final_answer: Optional[str] = None
         messages = []
         tool_results: List[ToolResult] = []
+
         while not final_answer:
-            prompt_message = f"""My question: {user_message}
+            message_content = f"""My question: {user_message}
 
 Your turn!
 Decide the next action to choose. Pick from the available tools.
 
 If you think you gathered all necessary information, generate a final answer"""
             if bool(tool_results):
-                prompt_message = (
+                message_content = (
                     "Here is the information from the last tool use:\n"
                     + tool_results[-1].get_for_prompt()
                     + "\n\n"
-                    + prompt_message
+                    + message_content
                 )
 
-            messages.append(
-                {
-                    "role": "user",
-                    "content": prompt_message
-                }
-            )
+            message = OpenAIMessage(role="user", content=message_content)
+            messages.append(message)
             request = self._build_request(messages)
+
             completion = self.llm_wrapper.open_ai_chat_complete(params=request)
-            if completion["choices"][0]["finish_reason"] == "function_call":
-                messages.append(completion["choices"][0]["message"])
-                function_call_str = completion["choices"][0]["message"]["function_call"]["arguments"]
-                function_name = completion["choices"][0]["message"]["function_call"]["name"]
-                function_call_json = json.loads(function_call_str)
+            choice = completion.choices[0]
+            if choice.finish_reason == "function_call":
+                messages.append(choice.message)
+                function_call = choice.message.function_call
+                thought_key = "thought"
+                yield function_call.arguments[thought_key]
 
-                thought = function_call_json.pop("thought")
-                print(f"\nNEAT AGENT THOUGHT: {thought}\n")
+                tool_to_use = self._get_tool_by_name(function_call.name)
 
-                tool_to_use = self._get_tool_by_name(function_name)
                 if bool(tool_to_use):
-                    tool_result = tool_to_use.run(function_call_json)
-                else:
-                    tool_result = ToolResult(results=[], source=function_name)
-                print(f"\nTOOL OUTPUT: {tool_result.get_for_prompt()}\n")
-                tool_results.append(tool_result)
-            else:
-                final_answer = completion["choices"][0]["message"]["content"]
+                    arguments = function_call.get_args_except([thought_key])
+                    tool_result = tool_to_use.run(arguments)
 
-        print(f"FINAL ANSWER: {final_answer}")
+                else:
+                    tool_result = ToolResult(results=[], source=function_call.name)
+
+                tool_results.append(tool_result)
+                yield tool_result.get_for_prompt()
+
+            else:
+                final_answer = choice.message.content
+
         return final_answer

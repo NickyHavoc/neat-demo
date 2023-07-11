@@ -1,9 +1,11 @@
+import json
 import os
 import openai
 
 from math import sqrt
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Optional, Sequence, Union
+from typing import Any, Dict, List, Optional, Sequence, Union
+from pydantic import BaseModel
 from aleph_alpha_client import (
     Client,
     CompletionRequest,
@@ -15,7 +17,61 @@ from aleph_alpha_client import (
     SummarizationRequest,
     TokenizationRequest,
 )
-from tqdm.asyncio import tqdm
+from tqdm import tqdm
+
+
+class OpenAIFunctionCall(BaseModel):
+    name: str
+    arguments: Dict[str, Any]
+
+    @classmethod
+    def from_string(cls, string: str):
+        return cls(**json.loads(string))
+
+    @classmethod
+    def from_json(cls, json_object: dict):
+        return cls(**json_object)
+
+    def get_args_except(self, except_args: List[str]):
+        return {k: v for k, v in self.arguments.items() if k not in except_args}
+
+
+class OpenAIMessage(BaseModel):
+    role: str
+    content: Optional[str]
+    function_call: Optional[OpenAIFunctionCall]
+
+    @classmethod
+    def from_json(cls, json_object: dict):
+        json_object.setdefault('function_call', None)
+        if json_object['function_call'] is not None:
+            json_object['function_call'] = OpenAIFunctionCall.from_json(json_object['function_call'])
+        return cls(**json_object)
+
+
+class OpenAIChatCompletionChoice(BaseModel):
+    index: int
+    message: OpenAIMessage
+    finish_reason: str
+
+    @classmethod
+    def from_json(cls, json_object: dict):
+        json_object['message'] = OpenAIMessage.from_json(json_object['message'])
+        return cls(**json_object)
+
+
+class OpenAIChatCompletion(BaseModel):
+    id: str
+    object: str
+    created: int
+    model: str
+    choices: List[OpenAIChatCompletionChoice]
+    usage: dict
+
+    @classmethod
+    def from_json(cls, json_object: dict):
+        json_object['choices'] = [OpenAIChatCompletionChoice.from_json(choice) for choice in json_object['choices']]
+        return cls(**json_object)
 
 
 class LLMWrapper:
@@ -152,8 +208,7 @@ class LLMWrapper:
     def open_ai_chat_complete(
         self,
         params: dict
-    ):
+    ) -> OpenAIChatCompletion:
         assert "model" in params and "messages" in params, "Must provide at least model and messages in params."
-        return dict(openai.ChatCompletion.create(**params))
-        # return openai.ChatCompletion.create(**params)
-        # message at res.choices[0].message
+        response = openai.ChatCompletion.create(**params)
+        return OpenAIChatCompletion.from_json(response)

@@ -1,8 +1,8 @@
 from pathlib import Path
 
 from neat_ai_assistant.documents.documents import DocumentMinion
-from neat_ai_assistant.brain.agent import NeatAgent
-from neat_ai_assistant.brain.tools import DocumentSearchTool, DuckDuckGoSearchTool
+from neat_ai_assistant.agent.agent import NeatAgent
+from neat_ai_assistant.agent.tools import DocumentSearchTool, DuckDuckGoSearchTool
 
 
 documents_path = Path(__file__).parent / "example_docs"
