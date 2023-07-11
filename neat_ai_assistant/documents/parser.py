@@ -22,7 +22,7 @@ class Parser:
     def parse_xlsx(self, file_path: Path):
         content = []
         df = pd.read_excel(file_path)
-        for index, row in df.iterrows():
+        for _, row in df.iterrows():
             row_content = ' '.join(row.astype(str).values.tolist())
             content.append(row_content)
         return content

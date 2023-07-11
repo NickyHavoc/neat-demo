@@ -139,13 +139,18 @@ Please use the following format:
         return all_file_paths
 
     @staticmethod
-    def _generate_hash_id(string: str) -> str:
-        return sha256(string.encode('utf-8')).hexdigest()
+    def _generate_hash_id(file_path: Path) -> str:
+        sha256_hash = sha256()
+        
+        with open(file_path,"rb") as f:
+            for byte_block in iter(lambda: f.read(4096),b""):
+                sha256_hash.update(byte_block)
+            
+        return sha256_hash.hexdigest()
 
     def _create_document_object_from_file(self, file_path: Path) -> Document:
+        doc_hash_id = self._generate_hash_id(file_path)
         raw_chunks = self.parser.parse_file(file_path)
-        unique_str = "".join(raw_chunks) + str(file_path)
-        doc_hash_id = self._generate_hash_id(string=unique_str)
         return Document(
             chunks=[
                 Chunk(
