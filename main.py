@@ -2,12 +2,10 @@ from pathlib import Path
 from pydantic import BaseModel
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from langchain.tools import DuckDuckGoSearchRun
-from langchain.utilities import WikipediaAPIWrapper
-from brain.tools import WikipediaQueryRun
 
-from documents import DocumentMinion
-from brain import Brain, DocumentSearchTool, WikipediaQueryRun
+from neat_ai_assistant.documents.documents import DocumentMinion
+from neat_ai_assistant.brain.agent import NeatAgent
+from neat_ai_assistant.brain.tools import DocumentSearchTool, DuckDuckGoSearchTool
 
 
 app = FastAPI()
@@ -29,12 +27,9 @@ tools = [
     DocumentSearchTool.from_document_minion(
         document_minion=doc_minion
     ),
-    DuckDuckGoSearchRun(),
-    WikipediaQueryRun(
-        api_wrapper=WikipediaAPIWrapper()
-    )
+    DuckDuckGoSearchTool(),
 ]
-brain = Brain(tools=tools)
+brain = NeatAgent(tools=tools)
 
 
 class IncomingMessage(BaseModel):

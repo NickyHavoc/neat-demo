@@ -12,9 +12,9 @@ class NeatAgent:
     ):
         if not all(isinstance(t, Tool) for t in tools):
             raise TypeError("All tools must be of type tool.")
-        tool_names = [t.name for t in tools]
-        if len(set(tool_names)) != len(tool_names):
-            raise ValueError("Tools must have strictly different names.")
+        serialized_tool_names = [t.serialized_name for t in tools]
+        if len(set(serialized_tool_names)) != len(serialized_tool_names):
+            raise ValueError("There is an overlap in tool names (after serializing).")
         self.tools = tools
         self.llm_wrapper = LLMWrapper()
 
@@ -71,10 +71,13 @@ Decide the next action to choose. Pick from the available tools.
 
 If you think you gathered all necessary information, generate a final answer"""
             if bool(tool_results):
-                prompt_message = "Here is the information from the last tool use:\n" 
-                + tool_results[-1].get_for_prompt() 
-                + "\n\n" 
-                + prompt_message
+                prompt_message = (
+                    "Here is the information from the last tool use:\n"
+                    + tool_results[-1].get_for_prompt()
+                    + "\n\n"
+                    + prompt_message
+                )
+
             messages.append(
                 {
                     "role": "user",
