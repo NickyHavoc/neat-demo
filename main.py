@@ -38,5 +38,5 @@ class IncomingMessage(BaseModel):
 
 @app.post("/send-message")
 async def send_message(message: IncomingMessage):
-    agent_message = brain.reply_to(user_message=message)
+    agent_message = brain.reply_to(message_string=message)
     return {"message": agent_message}

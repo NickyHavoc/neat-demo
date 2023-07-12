@@ -1,9 +1,31 @@
 import re
-from typing import Dict, List, Union
+from typing import Dict, List, Literal
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
 
 from ..documents.documents import DocumentMinion
+from ..utils.open_ai_abstractions import OpenAIChatRequestFunctionCall, OpenAIChatRequestFunctionCallParameters
+
+
+class ToolParam(BaseModel):
+    name: str
+    type: Literal["string", "number", "integer", "object", "array", "boolean", "null"]
+    description: str
+    required: bool
+
+
+tool_param_query = ToolParam(
+    name="query",
+    type="string",
+    description="The query to call the tool with.",
+    required=True
+)
+tool_param_n = ToolParam(
+    name="n",
+    type="integer",
+    description="The number of (search) results to obtain. Set to higher value for greater hit rate. Default: 1.",
+    required=True
+)
 
 
 class ToolResult(BaseModel):
@@ -15,17 +37,19 @@ class ToolResult(BaseModel):
             source=self.source,
             results="\n\n".join(self.results)
         )
-
+    
 
 class Tool:
     def __init__(
         self,
         name: str,
-        description: str
+        description: str,
+        params: List[ToolParam]
     ):
         self.name = name
         self.serialized_name = self._get_serializable_function_name()
         self.description = description
+        self.params = params
 
     def run(self, json_query: dict) -> ToolResult:
         """
@@ -35,7 +59,7 @@ class Tool:
         - n: int (the desired number of results)
         """
 
-    def get_for_prompt(self) -> str:
+    def get_as_str_for_prompt(self) -> str:
         return f"{self.name} – {self.description}"
 
     def _get_serializable_function_name(self) -> str:
@@ -44,29 +68,28 @@ class Tool:
         transformed_string = transformed_string[:64]
         return transformed_string.lower()
 
-    def get_for_function_call(self) -> dict:
-        """
-        Returns a json object that can be used to call the OpenAI API and retrieve a json.
-        """
+    def _serialize_params_to_json(self, require_reasoning: bool):
+        def build_param_json(type: str, description: str):
+            return {"type": type, "description": description}
+
         return {
-            "name": self.serialized_name,
-            "description": "{self.description}",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "query": {
-                        "type": "string",
-                        "description": "The query to call the tool with.",
-                    },
-                    "n": {
-                        "type": "integer",
-                        "description": "The number of (search) results to obtain. Set to higher value for greater hit rate. Default: 1."},
-                },
-                "required": [
-                    "query",
-                    "n"],
+            "type": "object",
+            "properties": {
+                **{p.name: build_param_json(p.type, p.description) for p in self.params},
+                **({"reasoning": build_param_json("string", "Why did you decide to take this action? Explain your thoughts.")} if require_reasoning else {})
             },
+            "required": [p.name for p in self.params if p.required] + (["reasoning"] if require_reasoning else [])
         }
+
+    def get_as_request_for_function_call(self, require_reasoning: bool) -> dict:
+        """
+        Returns a OpenAIChatRequestFunctionCall object that can be used to call the OpenAI API and retrieve a function call object.
+        """
+        return OpenAIChatRequestFunctionCall(
+            name=self.serialized_name,
+            description=self.description,
+            parameters=self._serialize_params_to_json(require_reasoning)
+        )
 
     def build_tool_result(self, results: List[str]):
         if not bool(results):
@@ -79,9 +102,13 @@ class DocumentSearchTool(Tool):
         self,
         document_minion: DocumentMinion,
         name: str = "Document Search",
-        description: str = "Find documents from a private document base."
+        description: str = "Find documents from a private document base.",
+        params: List[ToolParam] = [
+            tool_param_query,
+            tool_param_n
+        ]
     ):
-        super().__init__(name, description)
+        super().__init__(name, description,params)
         self.document_minion = document_minion
 
     @classmethod
@@ -106,9 +133,13 @@ class DuckDuckGoSearchTool(Tool):
     def __init__(
         self,
         name: str = "DuckDuckGo Search Engine",
-        description: str = "Find information directly from the internet."
+        description: str = "Find information directly from the internet.",
+        params: List[ToolParam] = [
+            tool_param_query,
+            tool_param_n
+        ]
     ):
-        super().__init__(name, description)
+        super().__init__(name, description, params)
 
     def run(self, json_query: dict) -> str:
 

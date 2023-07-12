@@ -7,7 +7,8 @@ from typing import Dict, List, Optional, Tuple
 from aleph_alpha_client import Prompt, SemanticEmbeddingRequest, SemanticEmbeddingResponse, SemanticRepresentation
 from tqdm import tqdm
 
-from ..utils.api_wrapper import LLMWrapper
+from ..utils.llm_wrapper import LLMWrapper
+from ..utils.open_ai_abstractions import OpenAIChatRequest
 
 from .parser import Parser
 
@@ -102,17 +103,18 @@ class DocumentMinion:
             d.get_excerpt() for d in self.documents[:10]
         )
         response = self.llm_wrapper.open_ai_chat_complete(
-            params={
-                "model": "gpt-3.5-turbo",
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": """You are the head of a document library.
+            request=OpenAIChatRequest.from_json(
+                json_object={
+                    "model": "gpt-3.5-turbo",
+                    "messages": [
+                        {
+                            "role": "system",
+                            "content": """You are the head of a document library.
 You are presented with a list of texts from your library and seek to find out, what the topic of your library is."""
-                    },
-                    {
-                        "role": "user",
-                        "content": f"""Hey! I found books with these texts in your library:
+                        },
+                        {
+                            "role": "user",
+                            "content": f"""Hey! I found books with these texts in your library:
 {document_text_excerpts}
 
 Can you write a short summary of what your library is about?
@@ -121,13 +123,12 @@ Please use the following format:
 <Database Title>
 <Database Summary>
 ```"""
-                    }
-                ],
-                "temperature": 0
-            }
+                        }
+                    ],
+                    "temperature": 0
+                }
+            )
         )
-        # message at res.choices[0].message
-
         result: str = response.choices[0].message.content
         res_tuple = result.strip().split("\n")
         if len(res_tuple) != 2:

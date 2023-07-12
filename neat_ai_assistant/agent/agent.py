@@ -3,13 +3,15 @@ import json
 from typing import Dict, List, Optional
 
 from .tools import Tool, ToolResult
-from ..utils.api_wrapper import LLMWrapper, OpenAIChatCompletion, OpenAIMessage
+from ..utils.llm_wrapper import LLMWrapper
+from ..utils.open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, OpenAIMessage, OpenAIChatCompletionFunctionCall
 
 
 class NeatAgent:
     def __init__(
         self,
         tools: List[Tool],
+        require_reasoning: bool = True
     ):
         if not all(isinstance(t, Tool) for t in tools):
             raise TypeError("All tools must be of type tool.")
@@ -18,7 +20,11 @@ class NeatAgent:
             raise ValueError(
                 "There is an overlap in tool names (after serializing).")
         self.tools = tools
+        self.require_reasoning = require_reasoning
+        self.reasoning_key = "reasoning"
+    
         self.llm_wrapper = LLMWrapper()
+        self.system_message = OpenAIMessage(role="system", content="Only use the functions you have been provided with. If you have a final answer, return this instead.")
 
     def _get_tool_by_name(self, name: str):
         for t in self.tools:
@@ -27,45 +33,26 @@ class NeatAgent:
                 t.serialized_name
             ]:
                 return t
-
-    def _get_tools_for_prompt(self) -> str:
-        return "\n".join(
-            t.get_for_prompt() for t in self.tools
-        )
-
-    def _get_tools_for_function_call(self) -> List[dict]:
-        function_call_jsons = [t.get_for_function_call() for t in self.tools]
-        for fcj in function_call_jsons:
-            fcj["parameters"]["properties"].update(
-                {
-                    "thought": {
-                        "type": "string",
-                        "description": "What do you think is a good next action to take? Describe your thoughts."
-                    }
-                }
-            )
-            fcj["parameters"]["required"].append("thought")
-        return function_call_jsons
-
+    
     def _build_request(
         self,
         messages: List[Dict[str, str]],
     ) -> dict:
-        system_message = OpenAIMessage(role="system", content="Only use the functions you have been provided with.")
-        messages = [system_message] + messages
-        return {
-            "model": "gpt-4",
-            "messages": messages,
-            "functions": self._get_tools_for_function_call()
-        }
+        return OpenAIChatRequest(
+            model="gpt-4",
+            messages=messages,
+            functions=[
+                t.get_as_request_for_function_call(self.require_reasoning) for t in self.tools
+            ]
+        )
 
-    def reply_to(self, user_message: str):
+    def reply_to(self, message_string: str):
         final_answer: Optional[str] = None
-        messages = []
+        messages = [self.system_message]
         tool_results: List[ToolResult] = []
 
         while not final_answer:
-            message_content = f"""My question: {user_message}
+            message_content = f"""My question: {message_string}
 
 Your turn!
 Decide the next action to choose. Pick from the available tools.
@@ -83,27 +70,29 @@ If you think you gathered all necessary information, generate a final answer"""
             messages.append(message)
             request = self._build_request(messages)
 
-            completion = self.llm_wrapper.open_ai_chat_complete(params=request)
+            completion = self.llm_wrapper.open_ai_chat_complete(request)
             choice = completion.choices[0]
             if choice.finish_reason == "function_call":
                 messages.append(choice.message)
                 function_call = choice.message.function_call
-                thought_key = "thought"
-                yield function_call.arguments[thought_key]
+                # yield function_call.arguments[thought_key]
+                print(f"\nTHOUGHTS:\n{function_call.arguments[self.reasoning_key]}\n")
 
                 tool_to_use = self._get_tool_by_name(function_call.name)
 
                 if bool(tool_to_use):
-                    arguments = function_call.get_args_except([thought_key])
+                    arguments = function_call.get_args_except([self.reasoning_key])
                     tool_result = tool_to_use.run(arguments)
 
                 else:
                     tool_result = ToolResult(results=[], source=function_call.name)
 
                 tool_results.append(tool_result)
-                yield tool_result.get_for_prompt()
+                # yield tool_result.get_for_prompt()
+                print(f"\nTOOL OUTPUT:\n{tool_result.get_for_prompt()}\n")
 
             else:
                 final_answer = choice.message.content
 
+        print(f"\nANSWER:\n{final_answer}\n")
         return final_answer
