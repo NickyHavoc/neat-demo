@@ -22,4 +22,3 @@ brain = NeatAgent(tools=tools)
 while True:
     user_message = input()
     answer = brain.reply_to(message_string=user_message)
-    print(answer)

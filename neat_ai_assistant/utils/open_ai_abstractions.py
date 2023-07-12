@@ -18,8 +18,11 @@ class OpenAIChatCompletionFunctionCall(BaseModel):
             json_object["arguments"] = json.loads(json_object["arguments"])
         return cls(**json_object)
 
-    def to_string(self):
-        return json.dumps(self.model_dump())
+    def to_open_ai_api_format(self):
+        return {
+            "name": self.name,
+            "arguments": json.dumps(self.arguments)
+        }
 
     def get_args_except(self, except_args: List[str]):
         return {k: v for k, v in self.arguments.items() if k not in except_args}
@@ -41,7 +44,7 @@ class OpenAIMessage(BaseModel):
         if not bool(self.function_call):
             return {"role": self.role, "content": self.content}
         else:
-            return {"role": self.role, "content": self.content, "function_call": self.function_call.to_string()}
+            return {"role": self.role, "content": self.content, "function_call": self.function_call.to_open_ai_api_format()}
 
 
 class OpenAIChatRequestFunctionCallParameters(BaseModel):
