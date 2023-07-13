@@ -21,7 +21,7 @@ class OpenAIChatCompletionFunctionCall(BaseModel):
             "name": self.name,
             "arguments": json.dumps(self.arguments)
         }
-    
+
     def to_string(self):
         return json.dumps(self.model_dump())
 

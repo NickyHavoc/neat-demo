@@ -175,7 +175,8 @@ class LLMWrapper:
         num_tokens = 0
         for message_obj in request.messages:
             message = message_obj.get_for_tokenization()
-            num_tokens += 4  # every message follows <im_start>{role/name}\n{content}<im_end>\n
+            # every message follows <im_start>{role/name}\n{content}<im_end>\n
+            num_tokens += 4
             for key, value in message.items():
                 num_tokens += len(encoding.encode(value))
                 if key == "name":  # if there's a name, the role is omitted

@@ -1,8 +1,12 @@
 import re
+import os
+import requests
 
 from typing import Dict, List, Literal
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
+from geopy.geocoders import Nominatim
+from dotenv import load_dotenv
 
 from .conversation_history import ConversationHistory
 from ..documents.documents import DocumentMinion
@@ -33,6 +37,12 @@ tool_param_n_history = ToolParam(
     name="n",
     type="integer",
     description="The number of last messages to retrieve. Default: 4.",
+    required=True
+)
+tool_param_location_weather = ToolParam(
+    name="location",
+    type="string",
+    description="The location to get the weather for.",
     required=True
 )
 
@@ -197,6 +207,52 @@ class RetrieveConversationHistoryTool(Tool):
 
     def run(self, json_query: dict) -> str:
         self.legal_params(json_query)
+        # Idea: retrieve conversation history by embeddings of messages.
+        # Disadvantage: may lose context between messages
+        results = self.history.get_as_string_list(n=json_query["n"])
+        return self.build_tool_result(results)
+
+
+class WeatherRetrievalTool(Tool):
+    def __init__(
+        self,
+        name: str = "Weather Retrieval API",
+        description: str = "Retrieve the current weather for a location.",
+        params: List[ToolParam] = [
+            tool_param_location_weather
+        ]
+    ):
+        super().__init__(name, description, params)
+        load_dotenv()
+        self.api_key = os.getenv("WEATHER_API_KEY")
+        self.url = "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={api_key}"
+
+    @staticmethod
+    def _get_coordinates(place_name: str):
+        geolocator = Nominatim(user_agent="my-app")
+        location = geolocator.geocode(place_name)
+
+        if location:
+            return location.latitude, location.longitude
+        else:
+            return None
+
+    def _get_weather_for_coordinates(self, lat: float, lon: float):
+        request_url = self.url.format(
+            lat=str(lat),
+            lon=str(lon),
+            part="[]",
+            api_key=self.api_key
+        )
+        response = requests.get(request_url)
+        print("")
+
+    def run(self, json_query: dict) -> str:
+        self.legal_params(json_query)
+
+        lat, lon = self._get_coordinates(json_query["location"])
+        weather = self._get_weather_for_coordinates(lat, lon)
+
         # Idea: retrieve conversation history by embeddings of messages.
         # Disadvantage: may lose context between messages
         results = self.history.get_as_string_list(n=json_query["n"])
