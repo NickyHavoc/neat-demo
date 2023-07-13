@@ -6,8 +6,8 @@ from pydantic import BaseModel
 
 from .conversation_history import ConversationHistory
 from .tools import Tool, ToolResult
-from ..utils.llm_wrapper import LLMWrapper
-from ..utils.open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, OpenAIMessage, OpenAIChatCompletionFunctionCall
+from ..llm.llm_wrapper import LLMWrapper
+from ..llm.open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, OpenAIMessage, OpenAIChatCompletionFunctionCall
 
 
 class NeatAgentOutput(BaseModel):

@@ -1,11 +1,12 @@
 import re
+
 from typing import Dict, List, Literal
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
 
 from .conversation_history import ConversationHistory
 from ..documents.documents import DocumentMinion
-from ..utils.open_ai_abstractions import OpenAIChatRequestFunctionCall, OpenAIChatRequestFunctionCallParameters
+from ..llm.open_ai_abstractions import OpenAIChatRequestFunctionCall
 
 
 class ToolParam(BaseModel):
@@ -16,6 +17,7 @@ class ToolParam(BaseModel):
     required: bool
 
 
+# Defining certain standard params fro standard tools
 tool_param_query = ToolParam(
     name="query",
     type="string",
@@ -58,13 +60,24 @@ class Tool:
         self.description = description
         self.params = params
 
+    def legal_params(self, json_query: dict) -> None:
+        received_params = set(json_query.keys())
+        expected_params = set(p.name for p in self.params)
+        if not expected_params.issubset(received_params):
+            missing_params = expected_params - received_params
+            raise ValueError(
+                f"Missing parameters: {', '.join(missing_params)}. "
+                f"Received parameters: {', '.join(received_params)}."
+            )
+
     def run(self, json_query: dict) -> ToolResult:
         """
-        Runs a json_query for the specific tool. Will return ToolResult
-        Standard json_query:
-        - query: str (the actual query)
-        - n: int (the desired number of results)
+        Runs a json_query for the specific tool. Will return ToolResult.
         """
+        # First, let's check if the params are legal...
+        self.legal_params(json_query)
+        # logic...
+        return self.build_tool_result([])
 
     def get_as_str_for_prompt(self) -> str:
         return f"{self.name} – {self.description}"
@@ -82,10 +95,10 @@ class Tool:
         return {
             "type": "object",
             "properties": {
-                **({"reasoning": build_param_json("string", "Why did you decide to take this action? Explain your thoughts.")} if require_reasoning else {}),
-                **{p.name: build_param_json(p.type, p.description) for p in self.params}
+                **{p.name: build_param_json(p.type, p.description) for p in self.params},
+                **({"reasoning": build_param_json("string", "Why did you decide to take this action? Explain your thoughts.")} if require_reasoning else {})
             },
-            "required": (["reasoning"] if require_reasoning else []) + [p.name for p in self.params if p.required]
+            "required": [p.name for p in self.params if p.required] + (["reasoning"] if require_reasoning else [])
         }
 
     def get_as_request_for_function_call(
@@ -128,6 +141,7 @@ class DocumentSearchTool(Tool):
         )
 
     def run(self, json_query: dict) -> str:
+        self.legal_params(json_query)
         results = self.document_minion.search(json_query["query"])
         formatted_results = [
             r.best_chunks[0][0].content for r in results[:json_query["n"]]] if bool(results) else []
@@ -150,6 +164,7 @@ class DuckDuckGoSearchTool(Tool):
         super().__init__(name, description, params)
 
     def run(self, json_query: dict) -> str:
+        self.legal_params(json_query)
 
         def construct_result_string(r: Dict[str, str]) -> str:
             return "{title}\n{body}".format(
@@ -181,6 +196,7 @@ class RetrieveConversationHistoryTool(Tool):
         self.history = history
 
     def run(self, json_query: dict) -> str:
+        self.legal_params(json_query)
         # Idea: retrieve conversation history by embeddings of messages.
         # Disadvantage: may lose context between messages
         results = self.history.get_as_string_list(n=json_query["n"])

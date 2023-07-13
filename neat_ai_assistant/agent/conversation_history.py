@@ -1,5 +1,5 @@
 from typing import List
-from ..utils.open_ai_abstractions import OpenAIMessage
+from ..llm.open_ai_abstractions import OpenAIMessage
 
 
 class ConversationHistory:
