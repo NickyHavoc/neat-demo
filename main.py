@@ -7,7 +7,7 @@ from sse_starlette import EventSourceResponse
 from neat_ai_assistant.documents.documents import DocumentMinion
 from neat_ai_assistant.agent.agent import NeatAgent
 from neat_ai_assistant.agent.conversation_history import ConversationHistory
-from neat_ai_assistant.agent.tools import DocumentSearchTool, DuckDuckGoSearchTool, RetrieveConversationHistoryTool
+from neat_ai_assistant.agent.tools import DocumentSearchTool, DuckDuckGoSearchTool, RetrieveConversationHistoryTool, StockTradingTool
 
 
 app = FastAPI()
@@ -33,7 +33,8 @@ tools = [
     ),
     RetrieveConversationHistoryTool(
         history=history
-    )
+    ),
+    StockTradingTool()
 ]
 agent = NeatAgent(
     tools=tools,

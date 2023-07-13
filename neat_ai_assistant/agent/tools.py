@@ -45,6 +45,12 @@ tool_param_location_weather = ToolParam(
     description="The location to get the weather for.",
     required=True
 )
+tool_param_stock_trading_symbol = ToolParam(
+    name="stock_trading_symbol",
+    type="string",
+    description="The stock trading symbol of a company (e.g. AAPL for Apple).",
+    required=True
+)
 
 
 class ToolResult(BaseModel):
@@ -253,7 +259,35 @@ class WeatherRetrievalTool(Tool):
         lat, lon = self._get_coordinates(json_query["location"])
         weather = self._get_weather_for_coordinates(lat, lon)
 
-        # Idea: retrieve conversation history by embeddings of messages.
-        # Disadvantage: may lose context between messages
-        results = self.history.get_as_string_list(n=json_query["n"])
-        return self.build_tool_result(results)
+        return self.build_tool_result([])
+
+
+class StockTradingTool(Tool):
+    def __init__(
+        self,
+        name: str = "Stock Trading API",
+        description: str = "Retrieve the current weather for a location.",
+        params: List[ToolParam] = [
+            tool_param_stock_trading_symbol
+        ]
+    ):
+        super().__init__(name, description, params)
+        load_dotenv()
+        self.api_key = os.getenv("STOCK_TRADING_API_KEY")
+        self.url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={api_key}"
+
+    def run(self, json_query: dict) -> str:
+        self.legal_params(json_query)
+        symbol = json_query["stock_trading_symbol"]
+        url = self.url.format(
+            symbol=symbol,
+            api_key=self.api_key
+        )
+        response = requests.get(url)
+        response_json = response.json()
+        open_value = response_json["Time Series (5min)"][list(
+            response_json["Time Series (5min)"].keys())[-1]]["1. open"]
+        close_value = response_json["Time Series (5min)"][list(
+            response_json["Time Series (5min)"].keys())[0]]["4. close"]
+        return self.build_tool_result(
+            [f"open_value: {open_value}", f"close_value: {close_value}"])

@@ -3,7 +3,7 @@ from pathlib import Path
 from neat_ai_assistant.documents.documents import DocumentMinion
 from neat_ai_assistant.agent.agent import NeatAgent
 from neat_ai_assistant.agent.conversation_history import ConversationHistory
-from neat_ai_assistant.agent.tools import DocumentSearchTool, DuckDuckGoSearchTool, RetrieveConversationHistoryTool, WeatherRetrievalTool
+from neat_ai_assistant.agent.tools import DocumentSearchTool, DuckDuckGoSearchTool, RetrieveConversationHistoryTool, WeatherRetrievalTool, StockTradingTool
 
 
 documents_path = Path(__file__).parent / "example_docs"
@@ -21,9 +21,9 @@ tools = [
     RetrieveConversationHistoryTool(
         history=history
     ),
-    WeatherRetrievalTool()
+    # WeatherRetrievalTool(),
+    StockTradingTool()
 ]
-tools[3].run({"location": "Heidelberg"})
 agent = NeatAgent(tools=tools, history=history)
 
 while True:
