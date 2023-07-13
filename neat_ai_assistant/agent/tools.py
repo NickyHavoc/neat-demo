@@ -10,7 +10,8 @@ from ..utils.open_ai_abstractions import OpenAIChatRequestFunctionCall, OpenAICh
 
 class ToolParam(BaseModel):
     name: str
-    type: Literal["string", "number", "integer", "object", "array", "boolean", "null"]
+    type: Literal["string", "number", "integer",
+                  "object", "array", "boolean", "null"]
     description: str
     required: bool
 
@@ -21,18 +22,11 @@ tool_param_query = ToolParam(
     description="The query to call the tool with.",
     required=True
 )
-tool_param_query_duck_duck_go = ToolParam(
-    name="query",
-    type="string",
-    description="A search query for a web search engine. Make it as granular as possible.",
-    required=True
-)
 tool_param_n = ToolParam(
     name="n",
     type="integer",
     description="The number of (search) results to obtain. Set to higher value for greater hit rate. Default: 5.",
-    required=True
-)
+    required=True)
 tool_param_n_history = ToolParam(
     name="n",
     type="integer",
@@ -50,7 +44,7 @@ class ToolResult(BaseModel):
             source=self.source,
             results="\n\n".join(self.results)
         )
-    
+
 
 class Tool:
     def __init__(
@@ -94,7 +88,8 @@ class Tool:
             "required": (["reasoning"] if require_reasoning else []) + [p.name for p in self.params if p.required]
         }
 
-    def get_as_request_for_function_call(self, require_reasoning: bool) -> dict:
+    def get_as_request_for_function_call(
+            self, require_reasoning: bool) -> dict:
         """
         Returns a OpenAIChatRequestFunctionCall object that can be used to call the OpenAI API and retrieve a function call object.
         """
@@ -121,7 +116,7 @@ class DocumentSearchTool(Tool):
             tool_param_n
         ]
     ):
-        super().__init__(name, description,params)
+        super().__init__(name, description, params)
         self.document_minion = document_minion
 
     @classmethod
@@ -186,6 +181,7 @@ class RetrieveConversationHistoryTool(Tool):
         self.history = history
 
     def run(self, json_query: dict) -> str:
-        # Idea: retrieve conversation history by embeddings of messages. Disadvantage: may lose context between messages
+        # Idea: retrieve conversation history by embeddings of messages.
+        # Disadvantage: may lose context between messages
         results = self.history.get_as_string_list(n=json_query["n"])
         return self.build_tool_result(results)

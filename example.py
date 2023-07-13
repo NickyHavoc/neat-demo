@@ -38,6 +38,8 @@ while True:
 # "reasoning": "The user's question is lacking in complete information. There's no mention of what stocks to compare. I need previous context to understand it better."
 # }}
 # As an AI, I apologize for the ambiguity I faced with your previous message. May I kindly ask you to specify the two companies' stock prices you wish to compare.
-# As soon as I get the necessary information from you, I'll happily provide you with a comparison between the two stock prices.
+# As soon as I get the necessary information from you, I'll happily
+# provide you with a comparison between the two stock prices.
 
-# Where the json is, for some reason, inside of "content" rather than "function_call"
+# Where the json is, for some reason, inside of "content" rather than
+# "function_call"

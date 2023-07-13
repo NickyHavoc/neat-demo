@@ -42,11 +42,11 @@ def chat_interface(inputs):
     for result in brain.reply_to(message_string=inputs):
         colored_result = color_text(result)
         history.append(colored_result)
-        chat = [(history[i], history[i + 1]) for i in range(0, len(history) - 1, 2)]
+        chat = [(history[i], history[i + 1])
+                for i in range(0, len(history) - 1, 2)]
         token_counter += 1
         yield chat, history, chat_counter
 
 
 iface = gr.Interface(fn=chat_interface, inputs="text", outputs="html")
 iface.launch()
-

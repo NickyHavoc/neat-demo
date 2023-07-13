@@ -23,7 +23,7 @@ class NeatAgent:
         self,
         tools: List[Tool],
         history: ConversationHistory,
-        model: Literal["gpt-3.5-turbo", "gpt-4"]="gpt-4",
+        model: Literal["gpt-3.5-turbo", "gpt-4"] = "gpt-4",
         require_reasoning: bool = True
     ):
         if not all(isinstance(t, Tool) for t in tools):
@@ -36,9 +36,11 @@ class NeatAgent:
         self.model = model
         self.require_reasoning = require_reasoning
         self.reasoning_key = "reasoning"
-    
+
         self.llm_wrapper = LLMWrapper()
-        self.system_message = OpenAIMessage(role="system", content="You want to find the best answer to a user question. If a question is very complex, break it down into sub-questions. Answer the question using only the functions you have been provided with. If you have a final answer, return this instead.")
+        self.system_message = OpenAIMessage(
+            role="system",
+            content="You want to find the best answer to a user question. If a question is very complex, break it down into sub-questions. Answer the question using only the functions you have been provided with. If you have a final answer, return this instead.")
 
         self.history = history
 
@@ -49,18 +51,15 @@ class NeatAgent:
                 t.serialized_name
             ]:
                 return t
-    
+
     def _build_request(
         self,
         messages: List[Dict[str, str]],
     ) -> dict:
         return OpenAIChatRequest(
-            model=self.model,
-            messages=messages,
-            functions=[
-                t.get_as_request_for_function_call(self.require_reasoning) for t in self.tools
-            ]
-        )
+            model=self.model, messages=messages, functions=[
+                t.get_as_request_for_function_call(
+                    self.require_reasoning) for t in self.tools])
 
     def reply_to(self, message_string: str):
         final_answer: Optional[str] = None
@@ -99,11 +98,13 @@ If you think you gathered all necessary information, generate a final answer."""
                 tool_to_use = self._get_tool_by_name(function_call.name)
 
                 if bool(tool_to_use):
-                    arguments = function_call.get_args_except([self.reasoning_key])
+                    arguments = function_call.get_args_except(
+                        [self.reasoning_key])
                     tool_result = tool_to_use.run(arguments)
 
                 else:
-                    tool_result = ToolResult(results=[], source=function_call.name)
+                    tool_result = ToolResult(
+                        results=[], source=function_call.name)
 
                 tool_results.append(tool_result)
                 yield NeatAgentOutput(

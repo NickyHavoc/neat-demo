@@ -11,7 +11,7 @@ class ConversationHistory:
 
     def get(self):
         return self.history
-    
+
     def get_as_string_list(self, n: int):
         def build_message_string(m: OpenAIMessage):
             return f"{m.role}: {m.content}"
