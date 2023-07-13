@@ -1,16 +1,29 @@
 import json
 
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
+from pydantic import BaseModel
+
+from .conversation_history import ConversationHistory
 from .tools import Tool, ToolResult
 from ..utils.llm_wrapper import LLMWrapper
 from ..utils.open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, OpenAIMessage, OpenAIChatCompletionFunctionCall
+
+
+class NeatAgentOutput(BaseModel):
+    type: Literal["thought", "function_call", "answer"]
+    text: str
+
+    def __repr__(self):
+        return f"\n\nTYPE: {self.type}\n\nOUTPUT: {self.text}\n\n"
 
 
 class NeatAgent:
     def __init__(
         self,
         tools: List[Tool],
+        history: ConversationHistory,
+        model: Literal["gpt-3.5-turbo", "gpt-4"]="gpt-4",
         require_reasoning: bool = True
     ):
         if not all(isinstance(t, Tool) for t in tools):
@@ -20,11 +33,14 @@ class NeatAgent:
             raise ValueError(
                 "There is an overlap in tool names (after serializing).")
         self.tools = tools
+        self.model = model
         self.require_reasoning = require_reasoning
         self.reasoning_key = "reasoning"
     
         self.llm_wrapper = LLMWrapper()
-        self.system_message = OpenAIMessage(role="system", content="Only use the functions you have been provided with. If you have a final answer, return this instead.")
+        self.system_message = OpenAIMessage(role="system", content="You want to find the best answer to a user question. If a question is very complex, break it down into sub-questions. Answer the question using only the functions you have been provided with. If you have a final answer, return this instead.")
+
+        self.history = history
 
     def _get_tool_by_name(self, name: str):
         for t in self.tools:
@@ -39,7 +55,7 @@ class NeatAgent:
         messages: List[Dict[str, str]],
     ) -> dict:
         return OpenAIChatRequest(
-            model="gpt-4",
+            model=self.model,
             messages=messages,
             functions=[
                 t.get_as_request_for_function_call(self.require_reasoning) for t in self.tools
@@ -57,11 +73,11 @@ class NeatAgent:
 Your turn!
 Decide the next action to choose. Pick from the available tools.
 
-If you think you gathered all necessary information, generate a final answer"""
+If you think you gathered all necessary information, generate a final answer."""
             if bool(tool_results):
                 message_content = (
                     "Here is the information from the last tool use:\n"
-                    + tool_results[-1].get_for_prompt()
+                    + tool_results[-1].get_as_string()
                     + "\n\n"
                     + message_content
                 )
@@ -75,9 +91,11 @@ If you think you gathered all necessary information, generate a final answer"""
             if choice.finish_reason == "function_call":
                 messages.append(choice.message)
                 function_call = choice.message.function_call
-                # yield function_call.arguments[thought_key]
-                print(f"\nTHOUGHTS:\n{function_call.arguments[self.reasoning_key]}\n")
 
+                yield NeatAgentOutput(
+                    type="thought",
+                    text=function_call.arguments[self.reasoning_key]
+                )
                 tool_to_use = self._get_tool_by_name(function_call.name)
 
                 if bool(tool_to_use):
@@ -88,11 +106,20 @@ If you think you gathered all necessary information, generate a final answer"""
                     tool_result = ToolResult(results=[], source=function_call.name)
 
                 tool_results.append(tool_result)
-                # yield tool_result.get_for_prompt()
-                print(f"\nTOOL OUTPUT:\n{tool_result.get_for_prompt()}\n")
+                yield NeatAgentOutput(
+                    type="function_call",
+                    text=f"QUERY:\n{json.dumps(arguments)}\n\n{tool_result.get_as_string()}"
+                )
 
             else:
                 final_answer = choice.message.content
 
-        print(f"\nANSWER:\n{final_answer}\n")
-        return final_answer
+        self.history.add_message(OpenAIMessage(
+            role="user",
+            content=message_string
+        ))
+        self.history.add_message(choice.message)
+        yield NeatAgentOutput(
+            type="answer",
+            text=final_answer
+        )

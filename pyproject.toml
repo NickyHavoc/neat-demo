@@ -23,6 +23,8 @@ openpyxl = "^3.1.2"
 pydantic = "^2.0.2"
 fastapi = "^0.100.0"
 uvicorn = "^0.22.0"
+gradio = "^3.36.1"
+sse-starlette = "^1.6.1"
 
 
 [tool.poetry.dev-dependencies]

@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 from pydantic import BaseModel
 
@@ -9,13 +9,10 @@ class OpenAIChatCompletionFunctionCall(BaseModel):
     arguments: Dict[str, Any]
 
     @classmethod
-    def from_string(cls, string: str):
-        return cls(**json.loads(string))
-
-    @classmethod
-    def from_json(cls, json_object: dict):
-        if type(json_object["arguments"]) == str:
-            json_object["arguments"] = json.loads(json_object["arguments"])
+    def from_json(cls, json_object: Dict[str, Union[str, Dict[str, Any]]]):
+        # OpenAI sometimes generates "functions." when returning this. No idea, why.
+        json_object["name"] = json_object["name"].replace("functions.", "")
+        json_object["arguments"] = json.loads(json_object["arguments"])
         return cls(**json_object)
 
     def to_open_ai_api_format(self):
