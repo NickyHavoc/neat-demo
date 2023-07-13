@@ -1,5 +1,6 @@
 import os
 import openai
+import tiktoken
 
 from math import sqrt
 from concurrent.futures import ThreadPoolExecutor
@@ -159,3 +160,25 @@ class LLMWrapper:
             raise TypeError("request must be of type OpenAIChatRequest.")
         response = openai.ChatCompletion.create(**request.to_json())
         return OpenAIChatCompletion.from_json(response)
+
+    def open_ai_count_tokens(
+        self,
+        request: OpenAIChatRequest
+    ):
+        """Returns the number of tokens used by a list of messages."""
+        if not isinstance(request, OpenAIChatRequest):
+            raise TypeError("request must be of type OpenAIChatRequest.")
+        try:
+            encoding = tiktoken.encoding_for_model(request.model)
+        except KeyError:
+            encoding = tiktoken.get_encoding("cl100k_base")
+        num_tokens = 0
+        for message_obj in request.messages:
+            message = message_obj.get_for_tokenization()
+            num_tokens += 4  # every message follows <im_start>{role/name}\n{content}<im_end>\n
+            for key, value in message.items():
+                num_tokens += len(encoding.encode(value))
+                if key == "name":  # if there's a name, the role is omitted
+                    num_tokens += -1  # role is always required and always 1 token
+        num_tokens += 2  # every reply is primed with <im_start>assistant
+        return num_tokens

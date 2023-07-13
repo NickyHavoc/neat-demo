@@ -40,7 +40,10 @@ class NeatAgent:
         self.llm_wrapper = LLMWrapper()
         self.system_message = OpenAIMessage(
             role="system",
-            content="You want to find the best answer to a user question. If a question is very complex, break it down into sub-questions. Answer the question using only the functions you have been provided with. If you have a final answer, return this instead.")
+            content="""You want to find the best answer to a user question. Always try to break a question down into subquestions, for example:
+"What's the age of Dua Lipa's boyfriend?", Subquestions: "Who is Dua Lipa's boyfriend?", "How old is [boyfriend_name]?".
+Answer the question using the functions you have been provided with.
+If you have a final answer, return this instead.""")
 
         self.history = history
 
@@ -54,12 +57,18 @@ class NeatAgent:
 
     def _build_request(
         self,
-        messages: List[Dict[str, str]],
+        messages: List[OpenAIMessage],
     ) -> dict:
-        return OpenAIChatRequest(
+        request = OpenAIChatRequest(
             model=self.model, messages=messages, functions=[
                 t.get_as_request_for_function_call(
                     self.require_reasoning) for t in self.tools])
+        ommited_messages = []
+        count = self.llm_wrapper.open_ai_count_tokens(request)
+        while count > 4096:
+            ommited_messages.append(request.messages.pop(1))
+            count = self.llm_wrapper.open_ai_count_tokens(request)
+        return request, ommited_messages
 
     def reply_to(self, message_string: str):
         final_answer: Optional[str] = None
@@ -83,7 +92,7 @@ If you think you gathered all necessary information, generate a final answer."""
 
             message = OpenAIMessage(role="user", content=message_content)
             messages.append(message)
-            request = self._build_request(messages)
+            request, omitted_messages = self._build_request(messages)
 
             completion = self.llm_wrapper.open_ai_chat_complete(request)
             choice = completion.choices[0]
