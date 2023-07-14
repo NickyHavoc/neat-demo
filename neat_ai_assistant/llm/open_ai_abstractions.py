@@ -10,8 +10,7 @@ class OpenAIChatCompletionFunctionCall(BaseModel):
 
     @classmethod
     def from_json(cls, json_object: Dict[str, Union[str, Dict[str, Any]]]):
-        # OpenAI sometimes generates "functions." when returning this. No idea,
-        # why.
+        # OpenAI sometimes generates "functions.". No idea why.
         json_object["name"] = json_object["name"].replace("functions.", "")
         json_object["arguments"] = json.loads(json_object["arguments"])
         return cls(**json_object)
