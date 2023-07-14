@@ -81,9 +81,10 @@ class DocumentSearchResult:
 class DocumentMinion:
     def __init__(
         self,
+        llm_wrapper: LLMWrapper,
         database_path: Optional[Path] = None
     ) -> None:
-        self.llm_wrapper = LLMWrapper()
+        self.llm_wrapper = llm_wrapper
         self.parser = Parser()
 
         if database_path is None:

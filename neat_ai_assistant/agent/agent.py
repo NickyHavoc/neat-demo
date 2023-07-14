@@ -1,11 +1,11 @@
 import json
 
-from typing import Dict, List, Literal, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel
 
 from .conversation_history import ConversationHistory
-from .tools import Tool, ToolResult
+from .tool import Tool, ToolResult
 from ..llm.llm_wrapper import LLMWrapper
 from ..llm.open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, OpenAIMessage, OpenAIChatCompletionFunctionCall
 
@@ -23,6 +23,7 @@ class NeatAgent:
         self,
         tools: List[Tool],
         history: ConversationHistory,
+        llm_wrapper: LLMWrapper,
         model: Literal["gpt-3.5-turbo", "gpt-4"] = "gpt-4",
         require_reasoning: bool = True
     ):
@@ -33,11 +34,11 @@ class NeatAgent:
             raise ValueError(
                 "There is an overlap in tool names (after serializing).")
         self.tools = tools
+        self.llm_wrapper = llm_wrapper
         self.model = model
         self.require_reasoning = require_reasoning
         self.reasoning_key = "reasoning"
 
-        self.llm_wrapper = LLMWrapper()
         self.system_message = OpenAIMessage(
             role="system",
             content="""You want to find the best answer to a user question. Always try to break a question down into subquestions, for example:

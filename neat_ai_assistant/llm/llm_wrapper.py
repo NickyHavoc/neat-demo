@@ -22,20 +22,17 @@ from .open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest
 
 
 class LLMWrapper:
-
-    ALEPH_ALPHA_TOKEN = os.getenv("ALEPH_ALPHA_TOKEN")
-    OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
-
-    def __init__(self):
+    def __init__(
+        self,
+        aleph_alpha_token: str,
+        open_ai_key: str
+    ):
         """
         Wrapper class for Aleph Alpha and Open AI APIs.
-        Will read tokens for each on instatiation from environment, keys:
-        - ALEPH_ALPHA_TOKEN
-        - OPEN_AI_KEY
         """
 
-        self.aleph_alpha_client = Client(self.ALEPH_ALPHA_TOKEN)
-        openai.api_key = self.OPEN_AI_KEY
+        self.aleph_alpha_client = Client(aleph_alpha_token)
+        openai.api_key = open_ai_key
 
     @staticmethod
     def build_aleph_alpha_request(
