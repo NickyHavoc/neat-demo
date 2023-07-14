@@ -3,7 +3,7 @@ name = "neat-ai-assistant"
 version = "0.0.1"
 description = "An AI assistant that intellegently handles your data."
 authors = ["Niklas Finken <niklasfinken@me.com>"]
-license = "TBD"
+license = "MIT"
 readme = "README.md"
 packages = [{include = "neat_ai_assistant"}]
 
@@ -30,8 +30,8 @@ geopy = "^2.3.0"
 
 
 [tool.poetry.dev-dependencies]
-pytest = "7.3.1"
-pre-commit = "3.3.1"
+pytest = "^7.3.1"
+pre-commit = "^3.3.1"
 
 
 [build-system]
