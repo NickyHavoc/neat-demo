@@ -45,7 +45,7 @@ function App() {
     const userMessage = { text: message, sender: 'user' };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
 
-    const response = await fetch(`http://localhost:8000/bot?user_message=${message}`);
+    const response = await fetch(`http://localhost:8000/chat?user_message=${message}`);
     const reader = response.body.getReader();
     const textDecoder = new TextDecoder();
 

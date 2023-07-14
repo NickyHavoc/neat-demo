@@ -56,9 +56,6 @@ class Tool:
         # logic...
         return self.build_tool_result([])
 
-    def get_as_str_for_prompt(self) -> str:
-        return f"{self.name} – {self.description}"
-
     def _get_serializable_function_name(self) -> str:
         transformed_string = self.name.replace(' ', '_')
         transformed_string = re.sub(r'[^\w-]', '', transformed_string)

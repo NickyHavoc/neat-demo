@@ -82,15 +82,13 @@ class DocumentMinion:
     def __init__(
         self,
         llm_wrapper: LLMWrapper,
-        database_path: Optional[Path] = None
+        documents_path: Path
     ) -> None:
         self.llm_wrapper = llm_wrapper
         self.parser = Parser()
 
-        if database_path is None:
-            self.database_path = Path.cwd() / "neat_database"
-        else:
-            self.database_path = database_path
+        self.documents_path = documents_path
+        self.database_path = (self.documents_path).parent / "neat_database"
 
         self.database_path.mkdir(parents=True, exist_ok=True)
         self.documents: Optional[List[Document]] = None
@@ -248,9 +246,9 @@ Please use the following format:
             with save_path.open("w") as file:
                 json.dump(serialized_docs, file, indent=4)
 
-    def instantiate_database(self, documents_path: Path, update: bool = True):
+    def instantiate_database(self, update: bool = True):
         if update:
-            documents = self._compare_documents(documents_path)
+            documents = self._compare_documents(self.documents_path)
             self._save_documents(documents)
         else:
             raw_documents = self._load_raw_documents()

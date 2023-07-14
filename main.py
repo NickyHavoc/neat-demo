@@ -33,13 +33,13 @@ llm_wrapper = LLMWrapper(
     aleph_alpha_token=ALEPH_ALPHA_TOKEN,
     open_ai_key=OPEN_AI_KEY
 )
-documents_path = Path(__file__).parent / "example_docs"
+documents_path = Path(__file__).parent / "example_documents" / "documents"
 doc_minion = DocumentMinion(
-    llm_wrapper
+    llm_wrapper,
+    documents_path
 )
 doc_minion.instantiate_database(
-    documents_path=documents_path,
-    update=False
+    update=True
 )
 history = ConversationHistory()
 tools = [
@@ -62,7 +62,7 @@ agent = NeatAgent(
 )
 
 
-@app.get("/bot")
+@app.get("/chat")
 async def chat(user_message: str):
     async def event_generator():
         for message in agent.reply_to(user_message):
