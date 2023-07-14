@@ -9,18 +9,18 @@ from geopy.location import Location
 from ..tool import Tool, ToolParam, ToolResult
 
 
-tool_param_location = ToolParam(
+TOOL_PARAM_LOCATION = ToolParam(
     name="location",
     type="string",
     description="The location to get the weather for.",
     required=True
 )
-datetime_format = "%Y-%m-%d %H:%M:%S"
-current_datetime = datetime.now().strftime(datetime_format)
-tool_param_datetime = ToolParam(
+DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+CURRENT_DATETIME = datetime.now().strftime(DATETIME_FORMAT)
+TOOL_PARAM_DATETIME = ToolParam(
     name="datetime",
     type="string",
-    description=f"Current datetime: \"{current_datetime}\". Return the desired time associated with the weather request in this format: \"{datetime_format}\".",
+    description=f"Current datetime: \"{CURRENT_DATETIME}\". Return the desired time associated with the weather request in this format: \"{DATETIME_FORMAT}\".",
     required=True
 )
 
@@ -40,11 +40,11 @@ class WeatherResult(BaseModel):
     def to_string(self):
         return f"""1. Location Information
 Location: {self.city} ({self.country})
-Sunrise (today): {self.sunrise_today.strftime(datetime_format)}
-Sunset (today): {self.sunset_today.strftime(datetime_format)}
+Sunrise (today): {self.sunrise_today.strftime(DATETIME_FORMAT)}
+Sunset (today): {self.sunset_today.strftime(DATETIME_FORMAT)}
 
 2. Forecast Information
-Date and time: {self.forecast_datetime.strftime(datetime_format)}
+Date and time: {self.forecast_datetime.strftime(DATETIME_FORMAT)}
 Temperature: {str(self.temperature_celsius)}°C
 Humidity: {str(self.humidity_pct)}%
 Weather Description: {self.weather_description}
@@ -59,8 +59,8 @@ class WeatherRetrievalTool(Tool):
         name: str = "Weather Retrieval API",
         description: str = "Retrieve the current weather for a location.",
         params: List[ToolParam] = [
-            tool_param_location,
-            tool_param_datetime
+            TOOL_PARAM_LOCATION,
+            TOOL_PARAM_DATETIME
         ]
     ):
         super().__init__(name, description, params)
@@ -141,7 +141,7 @@ class WeatherRetrievalTool(Tool):
             except ValueError:
                 return None
 
-        desired_datetime = to_datetime(desired_datetime) or current_datetime
+        desired_datetime = to_datetime(desired_datetime) or CURRENT_DATETIME
         weather_info, city_info = response_json["list"], response_json["city"]
         relevant_weather_info = min(
             weather_info,

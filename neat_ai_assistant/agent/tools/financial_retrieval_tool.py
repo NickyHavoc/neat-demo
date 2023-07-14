@@ -5,7 +5,7 @@ from typing import List
 from ..tool import Tool, ToolParam, ToolResult
 
 
-tool_param_stock_trading_symbol = ToolParam(
+TOOL_PARAM_STOCK_TRADING_SYMBOL = ToolParam(
     name="stock_trading_symbol",
     type="string",
     description="The stock trading symbol of a company (e.g. AAPL for Apple).",
@@ -20,7 +20,7 @@ class FinancialRetrievalTool(Tool):
         name: str = "Stock Trading API",
         description: str = "Retrieve the current weather for a location.",
         params: List[ToolParam] = [
-            tool_param_stock_trading_symbol
+            TOOL_PARAM_STOCK_TRADING_SYMBOL
         ]
     ):
         super().__init__(name, description, params)

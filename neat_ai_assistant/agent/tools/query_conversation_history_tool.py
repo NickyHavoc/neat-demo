@@ -3,7 +3,7 @@ from ..tool import Tool, ToolParam, ToolResult
 from ..conversation_history import ConversationHistory
 
 
-tool_param_n = ToolParam(
+TOOL_PARAM_N = ToolParam(
     name="n",
     type="integer",
     description="The number of last messages to retrieve. Default: 4.",
@@ -18,7 +18,7 @@ class QueryConversationHistoryTool(Tool):
         name: str = "Retrieve Conversation History",
         description: str = "If a question is lacking context, retrieve the prior conversation history to gather more information.",
         params: List[ToolParam] = [
-            tool_param_n
+            TOOL_PARAM_N
         ]
     ):
         super().__init__(name, description, params)

@@ -4,15 +4,15 @@ from ..tool import Tool, ToolParam, ToolResult
 from ...documents.documents import DocumentMinion
 
 
-tool_param_query = ToolParam(
-    name="query",
-    type="string",
-    description="The query to call the document database with. Formulate verbosely and precisely.",
-    required=True)
-tool_param_n = ToolParam(
+TOOL_PARAM_N = ToolParam(
     name="n",
     type="integer",
     description="The number of search results to obtain. Set to higher value for greater hit rate. Default: 3.",
+    required=True)
+TOOL_PARAM_QUERY = ToolParam(
+    name="query",
+    type="string",
+    description="The query to call the document database with. Formulate verbosely and precisely.",
     required=True)
 
 
@@ -23,8 +23,8 @@ class DocumentSearchTool(Tool):
         name: str = "Document Search",
         description: str = "Find documents from a private document base.",
         params: List[ToolParam] = [
-            tool_param_n,
-            tool_param_query
+            TOOL_PARAM_N,
+            TOOL_PARAM_QUERY
         ]
     ):
         super().__init__(name, description, params)
