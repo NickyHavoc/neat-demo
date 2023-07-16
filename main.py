@@ -39,7 +39,7 @@ doc_minion = DocumentMinion(
     documents_path
 )
 doc_minion.instantiate_database(
-    update=True
+    update=False
 )
 history = ConversationHistory()
 tools = [
