@@ -6,6 +6,12 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Verdana', sans-serif;
     background-color: #232528;
     font-size: 12px;
+    box-sizing: border-box;
+  }
+
+  input, button, div {
+    font-family: 'Verdana', sans-serif;
+    font-size: 12px;
   }
 `;
 
@@ -16,7 +22,6 @@ const InputBar = styled.input`
   width: 80%;
   box-sizing: border-box;
   outline: none;
-  font-size: 12px;
 `;
 
 const SendButton = styled.button`
@@ -28,7 +33,6 @@ const SendButton = styled.button`
   width: 15%;
   cursor: pointer;
   outline: none;
-  font-size: 12px;
   &:disabled {
     background: #ddd;
     color: #666;
@@ -47,6 +51,7 @@ const Form = styled.form`
   bottom: 0;
   background-color: #232528;
   padding: 20px 0;
+  margin-top: auto; /* Add this line to push the form to the bottom */
 `;
 
 const ChatContainer = styled.div`
@@ -56,13 +61,15 @@ const ChatContainer = styled.div`
   max-width: 70vw;
   margin: auto;
   height: 90vh;
+  min-height: 90vh; /* Add this line to make the container full height */
 `;
 
 const MessageContainer = styled.div`
   display: flex;
   justify-content: ${props => props.sender === 'user' ? "flex-end" : "flex-start"};
   width: 95%;
-  padding: 10px;
+  padding: 0px;
+  margin-bottom: 15px; // Add margin to create space between messages
 `;
 
 const Message = styled.div`
@@ -75,6 +82,11 @@ const Message = styled.div`
   padding: 20px;
   white-space: pre-wrap;
   overflow-wrap: break-word;
+`;
+
+const ImageMessage = styled.img`
+  max-width: 80%;
+  border-radius: 5px;
 `;
 
 function App() {
@@ -105,6 +117,12 @@ function App() {
         .map(msg => msg.replace('data: ', ''))
         .forEach(jsonPart => {
           const botMessage = { ...JSON.parse(jsonPart), sender: 'bot' };
+          
+          // Check if message is an image and decode it
+          if (botMessage.type === 'image') {
+            botMessage.text = `data:image/png;base64,${botMessage.text}`;
+          }
+
           setMessages((prevMessages) => [...prevMessages, botMessage]);
         });
     }
@@ -127,7 +145,10 @@ function App() {
         <MessagesWrapper>
           {messages.map((message, index) =>
             <MessageContainer key={index} sender={message.sender}>
-              <Message {...message}>{message.text}</Message>
+              {message.type === 'image' ?
+                <ImageMessage src={message.text} /> :
+                <Message {...message}>{message.text}</Message>
+              }
             </MessageContainer>
           )}
           <div ref={bottomRef} />

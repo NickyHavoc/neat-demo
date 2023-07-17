@@ -94,6 +94,13 @@ class OpenAIChatRequest(BaseModel):
         return dict_representation
 
 
+class OpenAIImageRequest(BaseModel):
+    prompt: str
+    n: int
+    length: int = 1024
+    width: int = 1024
+
+
 class OpenAIChatCompletionChoice(BaseModel):
     index: int
     message: OpenAIMessage

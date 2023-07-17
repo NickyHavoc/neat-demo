@@ -1,4 +1,5 @@
 import json
+import base64
 
 from typing import List, Literal, Optional
 
@@ -12,7 +13,8 @@ from ..llm.open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, 
 
 class NeatAgentOutput(BaseModel):
     type: Literal["thought", "function_call", "answer"]
-    text: str
+    text: Optional[str]
+    image: Optional[bytes]
 
     def __repr__(self):
         return f"\n\nTYPE: {self.type}\n\nOUTPUT: {self.text}\n\n"
