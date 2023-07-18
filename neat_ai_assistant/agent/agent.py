@@ -6,8 +6,8 @@ from pydantic import BaseModel
 
 from .conversation_history import ConversationHistory
 from .tool import Tool, ToolResult
-from ..llm.llm_wrapper import LLMWrapper
-from ..llm.abstractions import ChatRequest, Message
+
+from ..llm import LLMWrapper, ChatRequest, Message
 
 
 class NeatAgentOutput(BaseModel):
@@ -38,8 +38,7 @@ class NeatAgent:
 
         self.system_message = Message(
             role="system",
-            content="""You want to find the best answer to a user question. Always try to break a question down into subquestions, for example:
-"What's the age of Dua Lipa's boyfriend?", Subquestions: "Who is Dua Lipa's boyfriend?", "How old is [boyfriend_name]?".
+            content="""You want to find the best answer to a user question.
 Answer the question ONLY using the functions you have been provided with.
 If you have a final answer, return this instead.""")
 
@@ -92,11 +91,11 @@ If you think you gathered all necessary information, generate a final answer."""
             messages.append(message)
             request, omitted_messages = self._build_request(messages)
 
-            completion = self.llm_wrapper.open_ai_chat_complete(request)
-            choice = completion.completions[0]
-            if choice.finish_reason == "function_call":
-                messages.append(choice.message)
-                function_call = choice.message.function_call
+            response = self.llm_wrapper.open_ai_chat_complete(request)
+            completion = response.completions[0]
+            if completion.finish_reason == "function_call":
+                messages.append(completion.message)
+                function_call = completion.message.function_call
 
                 yield NeatAgentOutput(
                     type="thought",
@@ -120,13 +119,13 @@ If you think you gathered all necessary information, generate a final answer."""
                 )
 
             else:
-                final_answer = choice.message.content
+                final_answer = completion.message.content
 
         self.history.add_message(Message(
             role="user",
             content=message_string
         ))
-        self.history.add_message(choice.message)
+        self.history.add_message(completion.message)
         yield NeatAgentOutput(
             type="answer",
             text=final_answer

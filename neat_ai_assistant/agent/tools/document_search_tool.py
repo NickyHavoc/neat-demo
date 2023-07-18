@@ -1,7 +1,7 @@
 from typing import List
 
 from ..tool import Tool, ToolParam, ToolResult
-from ...documents.documents import DocumentMinion
+from ...documents import DocumentMinion
 
 
 TOOL_PARAM_N = ToolParam(

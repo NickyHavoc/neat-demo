@@ -17,7 +17,7 @@ from aleph_alpha_client import (
 )
 from tqdm import tqdm
 
-from .abstractions import ChatResponse, ChatRequest, ImageRequest
+from .open_ai_abstractions import ChatResponse, ChatRequest
 
 
 class LLMWrapper:
@@ -156,17 +156,6 @@ class LLMWrapper:
             raise TypeError("request must be of type OpenAIChatRequest.")
         response = openai.ChatCompletion.create(**request.to_json())
         return ChatResponse.from_json(response)
-
-    # def open_ai_image_complete(
-    #     self,
-    #     request: OpenAIImageRequest,
-    # ):
-    #     response = openai.Image.create(
-    #     prompt=request.prompt,
-    #     n=request.n,
-    #     size=f"{str(request.length)}x{str(request.width)}"
-    #     )
-    #     return response['data'][0]['url']
 
     def open_ai_count_tokens(
         self,

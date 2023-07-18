@@ -3,7 +3,7 @@ import re
 from typing import List, Literal, Optional
 from pydantic import BaseModel
 
-from ..llm.abstractions import ChatRequestFunctionCall
+from ..llm import ChatRequestFunctionCall
 
 
 class ToolParam(BaseModel):
@@ -99,7 +99,7 @@ class Tool:
         if not bool(results):
             results = ["This tool run did not yield a result."]
         return ToolResult(source=self.name, results=results)
-    
+
     def _build_image_tool_result(self, image: Optional[bytes]) -> ToolResult:
         if not bool(image):
             results = ["This tool run did not yield a result."]
@@ -107,4 +107,8 @@ class Tool:
         else:
             results = None
             final = True
-        return ToolResult(source=self.name, results=results, image=image, final=final)
+        return ToolResult(
+            source=self.name,
+            results=results,
+            image=image,
+            final=final)

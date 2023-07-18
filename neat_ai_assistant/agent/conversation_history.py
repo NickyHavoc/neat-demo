@@ -1,5 +1,6 @@
 from typing import List
-from ..llm.abstractions import Message
+
+from ..llm import Message
 
 
 class ConversationHistory:

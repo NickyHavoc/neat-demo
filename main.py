@@ -7,11 +7,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette import EventSourceResponse
 from dotenv import load_dotenv
 
-from neat_ai_assistant.documents.documents import DocumentMinion
-from neat_ai_assistant.agent.agent import NeatAgent
-from neat_ai_assistant.agent.conversation_history import ConversationHistory
-from neat_ai_assistant.agent.tools import DocumentSearchTool, DuckDuckGoSearchTool, QueryConversationHistoryTool, WeatherRetrievalTool
-from neat_ai_assistant.llm.llm_wrapper import LLMWrapper
+from neat_ai_assistant.agent import (
+    NeatAgent,
+    ConversationHistory,
+    DocumentSearchTool,
+    DuckDuckGoSearchTool,
+    QueryConversationHistoryTool,
+    WeatherRetrievalTool
+)
+from neat_ai_assistant.documents import DocumentMinion
+from neat_ai_assistant.llm import LLMWrapper
 
 
 app = FastAPI()

@@ -7,8 +7,7 @@ from typing import Dict, List, Optional, Tuple
 from aleph_alpha_client import Prompt, SemanticEmbeddingRequest, SemanticEmbeddingResponse, SemanticRepresentation
 from tqdm import tqdm
 
-from ..llm.llm_wrapper import LLMWrapper
-from ..llm.abstractions import ChatRequest
+from ..llm import LLMWrapper, ChatRequest
 
 from .parser import Parser
 

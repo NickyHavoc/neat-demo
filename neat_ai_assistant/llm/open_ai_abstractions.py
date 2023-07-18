@@ -88,13 +88,6 @@ class ChatRequest(BaseModel):
         return dict_representation
 
 
-class ImageRequest(BaseModel):
-    prompt: str
-    n: int = 1
-    length: int = 1024
-    width: int = 1024
-
-
 class ChatCompletion(BaseModel):
     index: int
     message: Message
