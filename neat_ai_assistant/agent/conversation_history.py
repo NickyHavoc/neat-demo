@@ -1,5 +1,5 @@
 from typing import List
-from ..llm.open_ai_abstractions import Message
+from ..llm.abstractions import Message
 
 
 class ConversationHistory:

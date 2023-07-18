@@ -8,7 +8,7 @@ from aleph_alpha_client import Prompt, SemanticEmbeddingRequest, SemanticEmbeddi
 from tqdm import tqdm
 
 from ..llm.llm_wrapper import LLMWrapper
-from ..llm.open_ai_abstractions import ChatRequest
+from ..llm.abstractions import ChatRequest
 
 from .parser import Parser
 

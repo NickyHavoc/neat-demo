@@ -17,7 +17,7 @@ from aleph_alpha_client import (
 )
 from tqdm import tqdm
 
-from .open_ai_abstractions import ChatResponse, ChatRequest, ImageRequest
+from .abstractions import ChatResponse, ChatRequest, ImageRequest
 
 
 class LLMWrapper:

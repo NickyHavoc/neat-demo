@@ -3,7 +3,7 @@ import re
 from typing import List, Literal, Optional
 from pydantic import BaseModel
 
-from ..llm.open_ai_abstractions import ChatRequestFunctionCall
+from ..llm.abstractions import ChatRequestFunctionCall
 
 
 class ToolParam(BaseModel):
