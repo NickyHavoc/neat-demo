@@ -1,6 +1,6 @@
-# Neat
+# neat
 
-Neat is the concept for a chat agent that can easily access data from anywhere.
+neat is a ReAct-like agent accessing all sorts of data & APIs
 
 
 ## Install editable with https
