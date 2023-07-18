@@ -107,7 +107,7 @@ class ChatCompletion(BaseModel):
         return cls(**json_object)
 
 
-class ChatCompletion(BaseModel):
+class ChatResponse(BaseModel):
     metadata: dict
     completions: List[ChatCompletion]
 
@@ -115,4 +115,5 @@ class ChatCompletion(BaseModel):
     def from_json(cls, json_object: dict):
         completions = [ChatCompletion.from_json(
             choice) for choice in json_object.pop('choices')]
+        json_object["usage"] = dict(json_object["usage"])
         return cls(metadata=dict(json_object), completions=completions)

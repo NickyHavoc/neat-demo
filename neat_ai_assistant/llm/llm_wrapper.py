@@ -1,4 +1,3 @@
-import os
 import openai
 import tiktoken
 
@@ -18,7 +17,7 @@ from aleph_alpha_client import (
 )
 from tqdm import tqdm
 
-from .open_ai_abstractions import ChatCompletion, ChatRequest, ImageRequest
+from .open_ai_abstractions import ChatResponse, ChatRequest, ImageRequest
 
 
 class LLMWrapper:
@@ -152,11 +151,11 @@ class LLMWrapper:
     def open_ai_chat_complete(
         self,
         request: ChatRequest
-    ) -> ChatCompletion:
+    ) -> ChatResponse:
         if not isinstance(request, ChatRequest):
             raise TypeError("request must be of type OpenAIChatRequest.")
         response = openai.ChatCompletion.create(**request.to_json())
-        return ChatCompletion.from_json(response)
+        return ChatResponse.from_json(response)
 
     # def open_ai_image_complete(
     #     self,
