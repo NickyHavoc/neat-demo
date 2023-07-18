@@ -40,5 +40,5 @@ class FinancialRetrievalTool(Tool):
             response_json["Time Series (5min)"].keys())[-1]]["1. open"]
         close_value = response_json["Time Series (5min)"][list(
             response_json["Time Series (5min)"].keys())[0]]["4. close"]
-        return self.build_tool_result(
+        return self._build_tool_result(
             [f"open_value: {open_value}", f"close_value: {close_value}"])

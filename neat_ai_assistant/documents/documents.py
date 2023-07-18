@@ -8,7 +8,7 @@ from aleph_alpha_client import Prompt, SemanticEmbeddingRequest, SemanticEmbeddi
 from tqdm import tqdm
 
 from ..llm.llm_wrapper import LLMWrapper
-from ..llm.open_ai_abstractions import OpenAIChatRequest
+from ..llm.open_ai_abstractions import ChatRequest
 
 from .parser import Parser
 
@@ -102,7 +102,7 @@ class DocumentMinion:
             d.get_excerpt() for d in self.documents[:10]
         )
         response = self.llm_wrapper.open_ai_chat_complete(
-            request=OpenAIChatRequest.from_json(
+            request=ChatRequest.from_json(
                 json_object={
                     "model": "gpt-3.5-turbo",
                     "messages": [
@@ -128,7 +128,7 @@ Please use the following format:
                 }
             )
         )
-        result: str = response.choices[0].message.content
+        result: str = response.completions[0].message.content
         res_tuple = result.strip().split("\n")
         if len(res_tuple) != 2:
             res_tuple = ("Database", result)

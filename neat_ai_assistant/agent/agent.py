@@ -1,5 +1,4 @@
 import json
-import base64
 
 from typing import List, Literal, Optional
 
@@ -8,16 +7,12 @@ from pydantic import BaseModel
 from .conversation_history import ConversationHistory
 from .tool import Tool, ToolResult
 from ..llm.llm_wrapper import LLMWrapper
-from ..llm.open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, OpenAIMessage, OpenAIChatCompletionFunctionCall
+from ..llm.open_ai_abstractions import ChatCompletion, ChatRequest, Message, ChatCompletionFunctionCall
 
 
 class NeatAgentOutput(BaseModel):
-    type: Literal["thought", "function_call", "answer"]
+    type: Literal["thought", "function_call", "answer", "image"]
     text: Optional[str]
-    image: Optional[bytes]
-
-    def __repr__(self):
-        return f"\n\nTYPE: {self.type}\n\nOUTPUT: {self.text}\n\n"
 
 
 class NeatAgent:
@@ -41,11 +36,11 @@ class NeatAgent:
         self.require_reasoning = require_reasoning
         self.reasoning_key = "reasoning"
 
-        self.system_message = OpenAIMessage(
+        self.system_message = Message(
             role="system",
             content="""You want to find the best answer to a user question. Always try to break a question down into subquestions, for example:
 "What's the age of Dua Lipa's boyfriend?", Subquestions: "Who is Dua Lipa's boyfriend?", "How old is [boyfriend_name]?".
-Answer the question using the functions you have been provided with.
+Answer the question ONLY using the functions you have been provided with.
 If you have a final answer, return this instead.""")
 
         self.history = history
@@ -60,9 +55,9 @@ If you have a final answer, return this instead.""")
 
     def _build_request(
         self,
-        messages: List[OpenAIMessage],
+        messages: List[Message],
     ) -> dict:
-        request = OpenAIChatRequest(
+        request = ChatRequest(
             model=self.model, messages=messages, functions=[
                 t.get_as_request_for_function_call(
                     self.require_reasoning) for t in self.tools])
@@ -78,7 +73,7 @@ If you have a final answer, return this instead.""")
         messages = [self.system_message]
         tool_results: List[ToolResult] = []
 
-        while not final_answer:
+        while not bool(final_answer):
             message_content = f"""My question: {message_string}
 
 Your turn!
@@ -93,12 +88,12 @@ If you think you gathered all necessary information, generate a final answer."""
                     + message_content
                 )
 
-            message = OpenAIMessage(role="user", content=message_content)
+            message = Message(role="user", content=message_content)
             messages.append(message)
             request, omitted_messages = self._build_request(messages)
 
             completion = self.llm_wrapper.open_ai_chat_complete(request)
-            choice = completion.choices[0]
+            choice = completion.completions[0]
             if choice.finish_reason == "function_call":
                 messages.append(choice.message)
                 function_call = choice.message.function_call
@@ -121,13 +116,13 @@ If you think you gathered all necessary information, generate a final answer."""
                 tool_results.append(tool_result)
                 yield NeatAgentOutput(
                     type="function_call",
-                    text=f"QUERY:\n{json.dumps(arguments)}\n\n{tool_result.get_as_string()}"
+                    text=f"Query:\n{json.dumps(arguments)}\n\n{tool_result.get_as_string()}"
                 )
 
             else:
                 final_answer = choice.message.content
 
-        self.history.add_message(OpenAIMessage(
+        self.history.add_message(Message(
             role="user",
             content=message_string
         ))

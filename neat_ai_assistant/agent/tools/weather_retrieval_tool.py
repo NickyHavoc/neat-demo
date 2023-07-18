@@ -164,4 +164,4 @@ class WeatherRetrievalTool(Tool):
                 lat, lon, json_query["datetime"])
             results = [weather_result.to_string()]
 
-        return self.build_tool_result(results)
+        return self._build_tool_result(results)

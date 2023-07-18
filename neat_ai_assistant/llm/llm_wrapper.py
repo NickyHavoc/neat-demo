@@ -18,7 +18,7 @@ from aleph_alpha_client import (
 )
 from tqdm import tqdm
 
-from .open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest, OpenAIImageRequest
+from .open_ai_abstractions import ChatCompletion, ChatRequest, ImageRequest
 
 
 class LLMWrapper:
@@ -151,30 +151,30 @@ class LLMWrapper:
 
     def open_ai_chat_complete(
         self,
-        request: OpenAIChatRequest
-    ) -> OpenAIChatCompletion:
-        if not isinstance(request, OpenAIChatRequest):
+        request: ChatRequest
+    ) -> ChatCompletion:
+        if not isinstance(request, ChatRequest):
             raise TypeError("request must be of type OpenAIChatRequest.")
         response = openai.ChatCompletion.create(**request.to_json())
-        return OpenAIChatCompletion.from_json(response)
+        return ChatCompletion.from_json(response)
 
-    def open_ai_image_complete(
-        self,
-        request: OpenAIImageRequest,
-    ):
-        response = openai.Image.create(
-        prompt=request.prompt,
-        n=request.n,
-        size=f"{str(request.size)}x{str(request.size)}"
-        )
-        return response['data'][0]['url']
+    # def open_ai_image_complete(
+    #     self,
+    #     request: OpenAIImageRequest,
+    # ):
+    #     response = openai.Image.create(
+    #     prompt=request.prompt,
+    #     n=request.n,
+    #     size=f"{str(request.length)}x{str(request.width)}"
+    #     )
+    #     return response['data'][0]['url']
 
     def open_ai_count_tokens(
         self,
-        request: OpenAIChatRequest
+        request: ChatRequest
     ):
         """Returns the number of tokens used by a list of messages."""
-        if not isinstance(request, OpenAIChatRequest):
+        if not isinstance(request, ChatRequest):
             raise TypeError("request must be of type OpenAIChatRequest.")
         try:
             encoding = tiktoken.encoding_for_model(request.model)

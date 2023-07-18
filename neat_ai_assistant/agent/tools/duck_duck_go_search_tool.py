@@ -45,4 +45,4 @@ class DuckDuckGoSearchTool(Tool):
                     break
                 results.append(construct_result_string(r))
 
-        return self.build_tool_result(results)
+        return self._build_tool_result(results)

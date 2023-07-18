@@ -1,9 +1,9 @@
 import re
 
-from typing import List, Literal
+from typing import List, Literal, Optional
 from pydantic import BaseModel
 
-from ..llm.open_ai_abstractions import OpenAIChatRequestFunctionCall
+from ..llm.open_ai_abstractions import ChatRequestFunctionCall
 
 
 class ToolParam(BaseModel):
@@ -15,14 +15,23 @@ class ToolParam(BaseModel):
 
 
 class ToolResult(BaseModel):
-    results: List[str]
     source: str
+    results: Optional[List[str]]
+    image: Optional[bytes] = None
+    final: bool = False
+    # add a bool "final" value that is False by default
 
     def get_as_string(self) -> str:
-        return "SOURCE: {source}\nRESULTS:\n{results}".format(
-            source=self.source,
-            results="\n\n".join(self.results)
-        )
+        if bool(self.results):
+            return "Source: {source}\n\nResults:\n{results}".format(
+                source=self.source,
+                results="\n\n".join(self.results)
+            )
+        elif bool(self.image):
+            return "Source: {source}\n\nResult is an image.".format(
+                source=self.source,
+            )
+        raise ValueError("appears to be empty result")
 
 
 class Tool:
@@ -54,7 +63,7 @@ class Tool:
         # First, let's check if the params are legal...
         self.legal_params(json_query)
         # logic...
-        return self.build_tool_result([])
+        return self._build_tool_result([])
 
     def _get_serializable_function_name(self) -> str:
         transformed_string = self.name.replace(' ', '_')
@@ -80,13 +89,22 @@ class Tool:
         """
         Returns a OpenAIChatRequestFunctionCall object that can be used to call the OpenAI API and retrieve a function call object.
         """
-        return OpenAIChatRequestFunctionCall(
+        return ChatRequestFunctionCall(
             name=self.serialized_name,
             description=self.description,
             parameters=self._serialize_params_to_json(require_reasoning)
         )
 
-    def build_tool_result(self, results: List[str]) -> ToolResult:
+    def _build_tool_result(self, results: Optional[List[str]]) -> ToolResult:
         if not bool(results):
             results = ["This tool run did not yield a result."]
-        return ToolResult(results=results, source=self.name)
+        return ToolResult(source=self.name, results=results)
+    
+    def _build_image_tool_result(self, image: Optional[bytes]) -> ToolResult:
+        if not bool(image):
+            results = ["This tool run did not yield a result."]
+            final = False
+        else:
+            results = None
+            final = True
+        return ToolResult(source=self.name, results=results, image=image, final=final)
