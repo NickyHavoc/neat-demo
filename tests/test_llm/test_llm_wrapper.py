@@ -1,10 +1,12 @@
 from typing import List
 from aleph_alpha_client import CompletionRequest, CompletionResponse, Prompt, SemanticEmbeddingRequest, SemanticEmbeddingResponse, SemanticRepresentation
 
-from tests import build_llm_wrapper
+from neat_ai_assistant.llm import ChatResponse
+
+from tests import build_llm_wrapper, build_chat_request
 
 
-def test_aleph_alpha_completion_request():
+def test_aleph_alpha_completion():
     llm_wrapper = build_llm_wrapper()
 
     completion_request = llm_wrapper.build_aleph_alpha_request(
@@ -21,10 +23,10 @@ def test_aleph_alpha_completion_request():
     assert isinstance(
         completion, str), f"Expected completion of type str but got {type(response)}."
     contains_str = "keeps the doctor away"
-    assert contains_str in completion, f"Expected \"keeps the doctor away\" to be in completion, but got completion: {completion}"
+    assert contains_str in completion, f"Expected \"{contains_str}\" to be in completion, but got completion: {completion}"
 
 
-def test_aleph_alpha_symmetric_semantic_embedding_request():
+def test_aleph_alpha_symmetric_semantic_embedding():
     llm_wrapper = build_llm_wrapper()
 
     sym_embedding_request_1 = llm_wrapper.build_aleph_alpha_request(
@@ -54,4 +56,16 @@ def test_aleph_alpha_symmetric_semantic_embedding_request():
     similarity = llm_wrapper.compute_cosine_similarity(embedding_1=embeddings[0], embedding_2=embeddings[1])
     similarity_threshold = 0.8
     assert similarity > similarity_threshold, f"Expected high score (> {str(similarity_threshold)}) for similar texts, but got score: {round(similarity, 2)}"
+
+
+def test_open_ai_chat():
+    llm_wrapper = build_llm_wrapper()
+    chat_request, contains_str = build_chat_request(get_contains_str=True)
+    response: ChatResponse = llm_wrapper.open_ai_chat_complete(chat_request)
+    assert isinstance(
+        response, ChatResponse), f"Expected response of type ChatResponse but got {type(response)}."
+    completion = response.completions[0].message.content
+    assert isinstance(
+        completion, str), f"Expected completion of type str but got {type(response)}."
+    assert contains_str in completion, f"Expected \"{contains_str}\" to be in completion, but got completion: {completion}"
 
