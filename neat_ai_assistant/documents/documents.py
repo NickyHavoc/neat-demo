@@ -108,7 +108,7 @@ class DocumentMinion:
                         {
                             "role": "system",
                             "content": """You are the head of a document library.
-You are presented with a list of texts from your library and seek to find out, what the topic of your library is."""
+You are presented with a list of texts from your library and seek to find out what the topic of your library is."""
                         },
                         {
                             "role": "user",

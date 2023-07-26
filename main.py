@@ -38,7 +38,7 @@ llm_wrapper = LLMWrapper(
     aleph_alpha_token=ALEPH_ALPHA_TOKEN,
     open_ai_key=OPEN_AI_KEY
 )
-documents_path = Path(__file__).parent / "example_documents" / "documents"
+documents_path = Path(__file__).parent / "car_subsidy_documents" / "documents"
 doc_minion = DocumentMinion(
     llm_wrapper,
     documents_path
