@@ -48,6 +48,9 @@ class Parser:
             content = file.readlines()
         return content
 
+    def chunk_file(self):
+        pass
+
     def parse_file(self, file_path: Path):
         file_extension = file_path.suffix.lower()
         if file_extension == '.pdf':
