@@ -19,11 +19,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-documents_path = Path(__file__).parent / "example_docs"
+documents_path = Path(__file__).parent / "car_subsidy_documents"
 doc_minion = DocumentMinion()
 doc_minion.instantiate_database(
     documents_path=documents_path,
-    update=False
+    update=True
 )
 history = ConversationHistory()
 tools = [

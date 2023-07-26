@@ -2,10 +2,11 @@ import re
 import os
 import requests
 
-from typing import Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 from duckduckgo_search import DDGS
 from pydantic import BaseModel
 from geopy.geocoders import Nominatim
+from geopy.location import Location
 from dotenv import load_dotenv
 
 from .conversation_history import ConversationHistory
@@ -42,7 +43,7 @@ tool_param_n_history = ToolParam(
 tool_param_location_weather = ToolParam(
     name="location",
     type="string",
-    description="The location to get the weather for.",
+    description="The location to get the weather for. Includes current temperature, conditions and forecasts.",
     required=True
 )
 tool_param_stock_trading_symbol = ToolParam(
@@ -231,17 +232,15 @@ class WeatherRetrievalTool(Tool):
         super().__init__(name, description, params)
         load_dotenv()
         self.api_key = os.getenv("WEATHER_API_KEY")
-        self.url = "https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={api_key}"
+        self.url = "https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}"
+        # Different API for forecasts, Doc links: https://openweathermap.org/price
 
     @staticmethod
-    def _get_coordinates(place_name: str):
+    def _get_coordinates(place_name: str) -> Optional[Tuple[Union[float, Any], Union[float, Any]]]:
         geolocator = Nominatim(user_agent="my-app")
-        location = geolocator.geocode(place_name)
-
+        location: Optional[Location] = geolocator.geocode(place_name)
         if location:
             return location.latitude, location.longitude
-        else:
-            return None
 
     def _get_weather_for_coordinates(self, lat: float, lon: float):
         request_url = self.url.format(
@@ -251,14 +250,12 @@ class WeatherRetrievalTool(Tool):
             api_key=self.api_key
         )
         response = requests.get(request_url)
-        print("")
+        temp = response.json()["main"]["temp"]-273.15
 
     def run(self, json_query: dict) -> str:
         self.legal_params(json_query)
-
         lat, lon = self._get_coordinates(json_query["location"])
         weather = self._get_weather_for_coordinates(lat, lon)
-
         return self.build_tool_result([])
 
 

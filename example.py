@@ -10,9 +10,11 @@ documents_path = Path(__file__).parent / "example_docs"
 doc_minion = DocumentMinion()
 doc_minion.instantiate_database(
     documents_path=documents_path,
-    update=True
+    update=False
 )
 history = ConversationHistory()
+tool = WeatherRetrievalTool()
+tool.run(json_query={"location": "Heidelberg"})
 tools = [
     DuckDuckGoSearchTool(),
     DocumentSearchTool.from_document_minion(
