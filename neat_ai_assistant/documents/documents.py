@@ -7,8 +7,7 @@ from typing import Dict, List, Optional, Tuple
 from aleph_alpha_client import Prompt, SemanticEmbeddingRequest, SemanticEmbeddingResponse, SemanticRepresentation
 from tqdm import tqdm
 
-from ..llm.llm_wrapper import LLMWrapper
-from ..llm.open_ai_abstractions import OpenAIChatRequest
+from ..llm import LLMWrapper, ChatRequest
 
 from .parser import Parser
 
@@ -81,15 +80,14 @@ class DocumentSearchResult:
 class DocumentMinion:
     def __init__(
         self,
-        database_path: Optional[Path] = None
+        llm_wrapper: LLMWrapper,
+        documents_path: Path
     ) -> None:
-        self.llm_wrapper = LLMWrapper()
+        self.llm_wrapper = llm_wrapper
         self.parser = Parser()
 
-        if database_path is None:
-            self.database_path = Path.cwd() / "neat_database"
-        else:
-            self.database_path = database_path
+        self.documents_path = documents_path
+        self.database_path = (self.documents_path).parent / "neat_database"
 
         self.database_path.mkdir(parents=True, exist_ok=True)
         self.documents: Optional[List[Document]] = None
@@ -103,7 +101,7 @@ class DocumentMinion:
             d.get_excerpt() for d in self.documents[:10]
         )
         response = self.llm_wrapper.open_ai_chat_complete(
-            request=OpenAIChatRequest.from_json(
+            request=ChatRequest.from_json(
                 json_object={
                     "model": "gpt-3.5-turbo",
                     "messages": [
@@ -129,7 +127,7 @@ Please use the following format:
                 }
             )
         )
-        result: str = response.choices[0].message.content
+        result: str = response.completions[0].message.content
         res_tuple = result.strip().split("\n")
         if len(res_tuple) != 2:
             res_tuple = ("Database", result)
@@ -247,9 +245,9 @@ Please use the following format:
             with save_path.open("w") as file:
                 json.dump(serialized_docs, file, indent=4)
 
-    def instantiate_database(self, documents_path: Path, update: bool = True):
+    def instantiate_database(self, update: bool = True):
         if update:
-            documents = self._compare_documents(documents_path)
+            documents = self._compare_documents(self.documents_path)
             self._save_documents(documents)
         else:
             raw_documents = self._load_raw_documents()

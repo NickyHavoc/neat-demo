@@ -1,4 +1,3 @@
-import os
 import openai
 import tiktoken
 
@@ -18,24 +17,21 @@ from aleph_alpha_client import (
 )
 from tqdm import tqdm
 
-from .open_ai_abstractions import OpenAIChatCompletion, OpenAIChatRequest
+from .open_ai_abstractions import ChatResponse, ChatRequest
 
 
 class LLMWrapper:
-
-    ALEPH_ALPHA_TOKEN = os.getenv("ALEPH_ALPHA_TOKEN")
-    OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
-
-    def __init__(self):
+    def __init__(
+        self,
+        aleph_alpha_token: str,
+        open_ai_key: str
+    ):
         """
         Wrapper class for Aleph Alpha and Open AI APIs.
-        Will read tokens for each on instatiation from environment, keys:
-        - ALEPH_ALPHA_TOKEN
-        - OPEN_AI_KEY
         """
 
-        self.aleph_alpha_client = Client(self.ALEPH_ALPHA_TOKEN)
-        openai.api_key = self.OPEN_AI_KEY
+        self.aleph_alpha_client = Client(aleph_alpha_token)
+        openai.api_key = open_ai_key
 
     @staticmethod
     def build_aleph_alpha_request(
@@ -154,19 +150,19 @@ class LLMWrapper:
 
     def open_ai_chat_complete(
         self,
-        request: OpenAIChatRequest
-    ) -> OpenAIChatCompletion:
-        if not isinstance(request, OpenAIChatRequest):
+        request: ChatRequest
+    ) -> ChatResponse:
+        if not isinstance(request, ChatRequest):
             raise TypeError("request must be of type OpenAIChatRequest.")
         response = openai.ChatCompletion.create(**request.to_json())
-        return OpenAIChatCompletion.from_json(response)
+        return ChatResponse.from_json(response)
 
     def open_ai_count_tokens(
         self,
-        request: OpenAIChatRequest
+        request: ChatRequest
     ):
         """Returns the number of tokens used by a list of messages."""
-        if not isinstance(request, OpenAIChatRequest):
+        if not isinstance(request, ChatRequest):
             raise TypeError("request must be of type OpenAIChatRequest.")
         try:
             encoding = tiktoken.encoding_for_model(request.model)

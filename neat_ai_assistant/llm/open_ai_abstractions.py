@@ -4,14 +4,13 @@ from typing import Any, Dict, List, Optional, Union
 from pydantic import BaseModel
 
 
-class OpenAIChatCompletionFunctionCall(BaseModel):
+class ChatCompletionFunctionCall(BaseModel):
     name: str
     arguments: Dict[str, Any]
 
     @classmethod
     def from_json(cls, json_object: Dict[str, Union[str, Dict[str, Any]]]):
-        # OpenAI sometimes generates "functions." when returning this. No idea,
-        # why.
+        # OpenAI sometimes generates "functions.". No idea why.
         json_object["name"] = json_object["name"].replace("functions.", "")
         json_object["arguments"] = json.loads(json_object["arguments"])
         return cls(**json_object)
@@ -29,16 +28,16 @@ class OpenAIChatCompletionFunctionCall(BaseModel):
         return {k: v for k, v in self.arguments.items() if k not in except_args}
 
 
-class OpenAIMessage(BaseModel):
+class Message(BaseModel):
     role: str
     content: Optional[str]
-    function_call: Optional[OpenAIChatCompletionFunctionCall] = None
+    function_call: Optional[ChatCompletionFunctionCall] = None
 
     @classmethod
     def from_json(cls, json_object: dict):
         json_object.setdefault('function_call', None)
         if json_object['function_call'] is not None:
-            json_object['function_call'] = OpenAIChatCompletionFunctionCall.from_json(
+            json_object['function_call'] = ChatCompletionFunctionCall.from_json(
                 json_object['function_call'])
         return cls(**json_object)
 
@@ -59,20 +58,14 @@ class OpenAIMessage(BaseModel):
         })
 
 
-class OpenAIChatRequestFunctionCallParameters(BaseModel):
-    type: str
-    properties: Dict[str, Dict[str, str]]
-    required: List[str]
-
-
-class OpenAIChatRequestFunctionCall(BaseModel):
+class ChatRequestFunctionCall(BaseModel):
     name: str
     description: str
-    parameters: OpenAIChatRequestFunctionCallParameters
+    parameters: dict
 
 
-class OpenAIChatRequest(BaseModel):
-    messages: List[OpenAIMessage]
+class ChatRequest(BaseModel):
+    messages: List[Message]
     model: str
 
     class Config:
@@ -81,7 +74,7 @@ class OpenAIChatRequest(BaseModel):
     @classmethod
     def from_json(cls, json_object: dict):
         json_object["messages"] = [
-            OpenAIMessage.from_json(m) for m in json_object["messages"]]
+            Message.from_json(m) for m in json_object["messages"]]
         return cls(**json_object)
 
     def to_json(self):
@@ -95,28 +88,25 @@ class OpenAIChatRequest(BaseModel):
         return dict_representation
 
 
-class OpenAIChatCompletionChoice(BaseModel):
+class ChatCompletion(BaseModel):
     index: int
-    message: OpenAIMessage
+    message: Message
     finish_reason: str
 
     @classmethod
     def from_json(cls, json_object: dict):
-        json_object['message'] = OpenAIMessage.from_json(
+        json_object['message'] = Message.from_json(
             json_object['message'])
         return cls(**json_object)
 
 
-class OpenAIChatCompletion(BaseModel):
-    id: str
-    object: str
-    created: int
-    model: str
-    choices: List[OpenAIChatCompletionChoice]
-    usage: dict
+class ChatResponse(BaseModel):
+    metadata: dict
+    completions: List[ChatCompletion]
 
     @classmethod
     def from_json(cls, json_object: dict):
-        json_object['choices'] = [OpenAIChatCompletionChoice.from_json(
-            choice) for choice in json_object['choices']]
-        return cls(**json_object)
+        completions = [ChatCompletion.from_json(
+            choice) for choice in json_object.pop('choices')]
+        json_object["usage"] = dict(json_object["usage"])
+        return cls(metadata=dict(json_object), completions=completions)
