@@ -13,5 +13,7 @@ from .tools import (
     DuckDuckGoSearchTool,
     FinancialRetrievalTool,
     QueryConversationHistoryTool,
-    WeatherRetrievalTool
+    WeatherRetrievalTool,
+    SEORetrievalTool,
+    SEOWriter
 )

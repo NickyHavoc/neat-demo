@@ -113,10 +113,15 @@ If you think you gathered all necessary information, generate a final answer."""
                         results=[], source=function_call.name)
 
                 tool_results.append(tool_result)
-                yield NeatAgentOutput(
-                    type="function_call",
-                    text=f"Query:\n{json.dumps(arguments)}\n\n{tool_result.get_as_string()}"
-                )
+                
+                if tool_result.final:
+                    final_answer = tool_result.get_as_string()
+
+                else:
+                    yield NeatAgentOutput(
+                        type="function_call",
+                        text=f"Query:\n{json.dumps(arguments)}\n\n{tool_result.get_as_string()}"
+                    )
 
             else:
                 final_answer = completion.message.content

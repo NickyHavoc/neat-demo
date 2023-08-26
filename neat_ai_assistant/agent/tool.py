@@ -95,10 +95,10 @@ class Tool:
             parameters=self._serialize_params_to_json(require_reasoning)
         )
 
-    def _build_tool_result(self, results: Optional[List[str]]) -> ToolResult:
+    def _build_tool_result(self, results: Optional[List[str]], final: bool = False) -> ToolResult:
         if not bool(results):
             results = ["This tool run did not yield a result."]
-        return ToolResult(source=self.name, results=results)
+        return ToolResult(source=self.name, results=results, final=final)
 
     def _build_image_tool_result(self, image: Optional[bytes]) -> ToolResult:
         if not bool(image):

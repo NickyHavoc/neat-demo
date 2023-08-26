@@ -13,7 +13,9 @@ from neat_ai_assistant.agent import (
     DocumentSearchTool,
     DuckDuckGoSearchTool,
     QueryConversationHistoryTool,
-    WeatherRetrievalTool
+    WeatherRetrievalTool,
+    SEORetrievalTool,
+    SEOWriter
 )
 from neat_ai_assistant.documents import DocumentMinion
 from neat_ai_assistant.llm import LLMWrapper
@@ -48,16 +50,22 @@ doc_minion.instantiate_database(
 )
 history = ConversationHistory()
 tools = [
-    DuckDuckGoSearchTool(),
-    DocumentSearchTool.from_document_minion(
-        document_minion=doc_minion
+    SEORetrievalTool(),
+    SEOWriter(
+        llm_wrapper=llm_wrapper,
+        company_name="Makro",
+        company_description="Makro is a Dutch wholesaler that operates globally."
     ),
+    DuckDuckGoSearchTool(),
+    # DocumentSearchTool.from_document_minion(
+    #     document_minion=doc_minion
+    # ),
     QueryConversationHistoryTool(
         history=history
     ),
-    WeatherRetrievalTool(
-        open_weather_map_api_key=OPEN_WEATHER_MAP_API_KEY
-    )
+    # WeatherRetrievalTool(
+    #     open_weather_map_api_key=OPEN_WEATHER_MAP_API_KEY
+    # )
 ]
 agent = NeatAgent(
     tools=tools,
