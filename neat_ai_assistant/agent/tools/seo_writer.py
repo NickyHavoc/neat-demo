@@ -89,8 +89,8 @@ Please use this output format:
 Your SEO article
 
 # FAQ
-**Question**: 'each question'
-**Answer**: 'each answer'
+**Question**: each question
+**Answer**: each answer
 ```"""
             }
         ]
