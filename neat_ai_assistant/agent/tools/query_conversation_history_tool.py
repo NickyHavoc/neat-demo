@@ -1,4 +1,4 @@
-from typing import List
+from typing import Sequence
 from ..tool import Tool, ToolParam, ToolResult
 from ..conversation_history import ConversationHistory
 
@@ -12,15 +12,20 @@ TOOL_PARAM_N = ToolParam(
 
 
 class QueryConversationHistoryTool(Tool):
+    """
+    Injects prior chat history into the context as it is not included by default.
+    Params:
+    - n (int): the number of last messages to be retrieved
+    """
     def __init__(
         self,
         history: ConversationHistory,
         name: str = "Retrieve Conversation History",
         description: str = "If a question is lacking context, retrieve the prior conversation history to gather more information.",
-        params: List[ToolParam] = [
+        params: Sequence[ToolParam] = [
             TOOL_PARAM_N
         ]
-    ):
+    ) -> None:
         super().__init__(name, description, params)
         self.history = history
 

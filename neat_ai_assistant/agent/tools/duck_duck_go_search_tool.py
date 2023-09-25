@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, Sequence
 from duckduckgo_search import DDGS
 
 from ..tool import Tool, ToolParam, ToolResult
@@ -18,15 +18,21 @@ TOOL_PARAM_QUERY = ToolParam(
 
 
 class DuckDuckGoSearchTool(Tool):
+    """
+    Uses DuckDuckGo search engine to query the internet. Only retrieves descriptive texts for hits.
+    Params:
+    - n (int): number of pages
+    - query (str): search query
+    """
     def __init__(
         self,
         name: str = "DuckDuckGo Search Engine",
         description: str = "Find information directly from the internet.",
-        params: List[ToolParam] = [
+        params: Sequence[ToolParam] = [
             TOOL_PARAM_N,
             TOOL_PARAM_QUERY
         ]
-    ):
+    ) -> None:
         super().__init__(name, description, params)
 
     def run(self, json_query: dict) -> ToolResult:

@@ -1,6 +1,6 @@
 import re
 
-from typing import List, Literal, Optional
+from typing import Sequence, Literal, Optional
 from pydantic import BaseModel
 
 from ..llm import ChatRequestFunctionCall
@@ -16,7 +16,7 @@ class ToolParam(BaseModel):
 
 class ToolResult(BaseModel):
     source: str
-    results: Optional[List[str]]
+    results: Optional[Sequence[str]]
     image: Optional[bytes] = None
     final: bool = False
     # add a bool "final" value that is False by default
@@ -39,7 +39,7 @@ class Tool:
         self,
         name: str,
         description: str,
-        params: List[ToolParam]
+        params: Sequence[ToolParam]
     ):
         self.name = name
         self.serialized_name = self._get_serializable_function_name()
@@ -95,20 +95,7 @@ class Tool:
             parameters=self._serialize_params_to_json(require_reasoning)
         )
 
-    def _build_tool_result(self, results: Optional[List[str]], final: bool = False) -> ToolResult:
+    def _build_tool_result(self, results: Optional[Sequence[str]], final: bool = False) -> ToolResult:
         if not bool(results):
             results = ["This tool run did not yield a result."]
         return ToolResult(source=self.name, results=results, final=final)
-
-    def _build_image_tool_result(self, image: Optional[bytes]) -> ToolResult:
-        if not bool(image):
-            results = ["This tool run did not yield a result."]
-            final = False
-        else:
-            results = None
-            final = True
-        return ToolResult(
-            source=self.name,
-            results=results,
-            image=image,
-            final=final)

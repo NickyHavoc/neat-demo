@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Sequence, Optional, Union
 
 from pydantic import BaseModel
 
@@ -10,7 +10,7 @@ class ChatCompletionFunctionCall(BaseModel):
 
     @classmethod
     def from_json(cls, json_object: Dict[str, Union[str, Dict[str, Any]]]):
-        # OpenAI sometimes generates "functions.". No idea why.
+        # OpenAI sometimes generates the str "functions.". No idea why.
         json_object["name"] = json_object["name"].replace("functions.", "")
         json_object["arguments"] = json.loads(json_object["arguments"])
         return cls(**json_object)
@@ -24,7 +24,7 @@ class ChatCompletionFunctionCall(BaseModel):
     def to_string(self):
         return json.dumps(self.model_dump())
 
-    def get_args_except(self, except_args: List[str]):
+    def get_args_except(self, except_args: Sequence[str]):
         return {k: v for k, v in self.arguments.items() if k not in except_args}
 
 
@@ -65,7 +65,7 @@ class ChatRequestFunctionCall(BaseModel):
 
 
 class ChatRequest(BaseModel):
-    messages: List[Message]
+    messages: Sequence[Message]
     model: str
 
     class Config:
@@ -102,7 +102,7 @@ class ChatCompletion(BaseModel):
 
 class ChatResponse(BaseModel):
     metadata: dict
-    completions: List[ChatCompletion]
+    completions: Sequence[ChatCompletion]
 
     @classmethod
     def from_json(cls, json_object: dict):

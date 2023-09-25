@@ -1,4 +1,4 @@
-from typing import List
+from typing import Sequence
 
 from ..tool import Tool, ToolParam, ToolResult
 from ...documents import DocumentMinion
@@ -17,21 +17,27 @@ TOOL_PARAM_QUERY = ToolParam(
 
 
 class DocumentSearchTool(Tool):
+    """
+    Uses Aleph Alpha embeddings-based document minion to search through a document database.
+    Params:
+    - n (int): number of search results
+    - query (str): search query
+    """
     def __init__(
         self,
         document_minion: DocumentMinion,
         name: str = "Document Search",
         description: str = "Find documents from a private document base.",
-        params: List[ToolParam] = [
+        params: Sequence[ToolParam] = [
             TOOL_PARAM_N,
             TOOL_PARAM_QUERY
         ]
-    ):
+    ) -> None:
         super().__init__(name, description, params)
         self.document_minion = document_minion
 
     @classmethod
-    def from_document_minion(cls, document_minion: DocumentMinion):
+    def from_document_minion(cls, document_minion: DocumentMinion) -> "DocumentSearchTool":
         return cls(
             document_minion=document_minion,
             name=document_minion.name,

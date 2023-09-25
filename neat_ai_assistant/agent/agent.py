@@ -1,6 +1,6 @@
 import json
 
-from typing import List, Literal, Optional
+from typing import Iterable, Sequence, Literal, Optional
 
 from pydantic import BaseModel
 
@@ -8,6 +8,10 @@ from .conversation_history import ConversationHistory
 from .tool import Tool, ToolResult
 
 from ..llm import LLMWrapper, ChatRequest, Message
+
+
+# ToDos:
+# - reply_to function is quite convoluted -> fix
 
 
 class NeatAgentOutput(BaseModel):
@@ -18,12 +22,12 @@ class NeatAgentOutput(BaseModel):
 class NeatAgent:
     def __init__(
         self,
-        tools: List[Tool],
+        tools: Sequence[Tool],
         history: ConversationHistory,
         llm_wrapper: LLMWrapper,
         model: Literal["gpt-3.5-turbo", "gpt-4"] = "gpt-4",
         require_reasoning: bool = True
-    ):
+    ) -> None:
         if not all(isinstance(t, Tool) for t in tools):
             raise TypeError("All tools must be of type tool.")
         serialized_tool_names = [t.serialized_name for t in tools]
@@ -44,7 +48,7 @@ If you have a final answer, return this instead.""")
 
         self.history = history
 
-    def _get_tool_by_name(self, name: str):
+    def _get_tool_by_name(self, name: str) -> Optional[Tool]:
         for t in self.tools:
             if name in [
                 t.name,
@@ -54,7 +58,7 @@ If you have a final answer, return this instead.""")
 
     def _build_request(
         self,
-        messages: List[Message],
+        messages: Sequence[Message],
     ) -> dict:
         request = ChatRequest(
             model=self.model, messages=messages, functions=[
@@ -67,10 +71,10 @@ If you have a final answer, return this instead.""")
             count = self.llm_wrapper.open_ai_count_tokens(request)
         return request, ommited_messages
 
-    def reply_to(self, message_string: str):
+    def reply_to(self, message_string: str) -> Iterable[NeatAgentOutput]:
         final_answer: Optional[str] = None
         messages = [self.system_message]
-        tool_results: List[ToolResult] = []
+        tool_results: Sequence[ToolResult] = []
 
         while not bool(final_answer):
             message_content = f"""My question: {message_string}

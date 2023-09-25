@@ -1,7 +1,7 @@
 import re
 import requests
 
-from typing import Dict, List, Optional
+from typing import Optional, Sequence
 from duckduckgo_search import DDGS
 from bs4 import BeautifulSoup, Tag
 
@@ -11,30 +11,30 @@ from ..tool import Tool, ToolParam, ToolResult
 TOOL_PARAM_N = ToolParam(
     name="n",
     type="integer",
-    description="The number of pages to obtain. Set to higher value for greater hit rate. Default: 5.",
+    description="The number of detailed pages to obtain. Set to higher value for greater hit rate. Default: 5.",
     required=True)
 TOOL_PARAM_QUERY = ToolParam(
     name="query",
     type="string",
-    description="Product to search for.",
+    description="The query to get results for.",
     required=True
 )
 
 
-class SEORetrievalTool(Tool):
+class WebpageRetrievalTool(Tool):
     def __init__(
         self,
-        name: str = "SEO Retrieval Engine",
-        description: str = "Search with a product to retrieve similar entries from the web about this product.",
-        params: List[ToolParam] = [
+        name: str = "Webpage Retrieval Engine",
+        description: str = "Search with a string to retrieve detailed webpages for this query.",
+        params: Sequence[ToolParam] = [
             TOOL_PARAM_N,
             TOOL_PARAM_QUERY
         ],
-    ):
+    ) -> None:
         super().__init__(name, description, params)
 
     @staticmethod
-    def _scrape_body_text(url: str, maximum_length_char: int = 1000):
+    def _scrape_body_text(url: str, maximum_length_char: int = 1000) -> Optional[str]:
 
         def clean_scraped_text(text: str) -> str:
             cleaned_text = text.replace("\xa0", " ")
@@ -44,19 +44,19 @@ class SEORetrievalTool(Tool):
             return cleaned_text.strip()
 
         def cut_text(text: str) -> str:
-            return text[:1000] + "..."
+            return text[:maximum_length_char] + "..."
 
         response = requests.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
 
-        headers: List[Tag] = soup.find_all(['h2', 'h3', 'h4', 'h5', 'h6'])
+        headers: Sequence[Tag] = soup.find_all(['h2', 'h3', 'h4', 'h5', 'h6'])
         if not bool(headers):
             return
 
-        sections: List[str] = []
+        sections: Sequence[str] = []
 
         for header in headers:
-            section_text: List[str] = [header.text]
+            section_text: Sequence[str] = [header.text]
             for sibling in header.find_all_next():
                 if sibling.name and sibling.name.startswith('h'):
                     break

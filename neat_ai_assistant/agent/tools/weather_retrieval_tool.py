@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 import requests
 
-from typing import List, Optional, Tuple
+from typing import Sequence, Optional
 from datetime import datetime
 from geopy.geocoders import Nominatim
 from geopy.location import Location
@@ -37,7 +37,7 @@ class WeatherResult(BaseModel):
     wind_speed_km_h: float
     wind_direction: str
 
-    def to_string(self):
+    def to_string(self) -> str:
         return f"""1. Location Information
 Location: {self.city} ({self.country})
 Sunrise (today): {self.sunrise_today.strftime(DATETIME_FORMAT)}
@@ -53,21 +53,27 @@ Wind direction: {self.wind_direction}"""
 
 
 class WeatherRetrievalTool(Tool):
+    """
+    Uses OpenWeatherMap to retrieve weather information.
+    Params:
+    - location (str): location of interest (will be transformed into coordinates)
+    - datetime (str): date and time to retrieve info for
+    """
     def __init__(
         self,
         open_weather_map_api_key: str,
         name: str = "Weather Retrieval API",
         description: str = "Retrieve the current weather for a location.",
-        params: List[ToolParam] = [
+        params: Sequence[ToolParam] = [
             TOOL_PARAM_LOCATION,
             TOOL_PARAM_DATETIME
         ]
-    ):
+    ) -> None:
         super().__init__(name, description, params)
         self.api_key = open_weather_map_api_key
 
     @staticmethod
-    def _get_coordinates(location_name: str) -> Optional[Tuple[float, float]]:
+    def _get_coordinates(location_name: str) -> Optional[tuple[float, float]]:
         geolocator = Nominatim(user_agent="my-app")
         location: Location = geolocator.geocode(location_name)
         if location:
@@ -135,7 +141,7 @@ class WeatherRetrievalTool(Tool):
         response = requests.get(request_url)
         response_json = response.json()
 
-        def to_datetime(datetime_str):
+        def to_datetime(datetime_str) -> Optional[datetime]:
             try:
                 return datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
             except ValueError:

@@ -1,8 +1,12 @@
 import requests
 
-from typing import List
+from typing import Sequence
 
 from ..tool import Tool, ToolParam, ToolResult
+
+
+# ToDos:
+# - add search/retrieval modes
 
 
 TOOL_PARAM_STOCK_TRADING_SYMBOL = ToolParam(
@@ -14,15 +18,20 @@ TOOL_PARAM_STOCK_TRADING_SYMBOL = ToolParam(
 
 
 class FinancialRetrievalTool(Tool):
+    """
+    Uses Alphavantage API to retrieve stock data.
+    Params:
+    - stock_trading_symbol (str): The trading symbol for the stock to be retrieved
+    """
     def __init__(
         self,
         alpha_vantage_api_key: str,
         name: str = "Stock Trading API",
         description: str = "Retrieve the current weather for a location.",
-        params: List[ToolParam] = [
+        params: Sequence[ToolParam] = [
             TOOL_PARAM_STOCK_TRADING_SYMBOL
         ]
-    ):
+    ) -> None:
         super().__init__(name, description, params)
         self.api_key = alpha_vantage_api_key
         self.url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={api_key}"

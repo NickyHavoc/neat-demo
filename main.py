@@ -14,7 +14,7 @@ from neat_ai_assistant.agent import (
     DuckDuckGoSearchTool,
     QueryConversationHistoryTool,
     WeatherRetrievalTool,
-    SEORetrievalTool,
+    WebpageRetrievalTool,
     SEOWriter
 )
 from neat_ai_assistant.documents import DocumentMinion
@@ -50,7 +50,7 @@ doc_minion.instantiate_database(
 )
 history = ConversationHistory()
 tools = [
-    SEORetrievalTool(),
+    WebpageRetrievalTool(),
     SEOWriter(
         llm_wrapper=llm_wrapper,
         company_name="Makro",

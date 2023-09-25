@@ -1,5 +1,5 @@
 from os import stat
-from typing import Dict, List
+from typing import Dict, Sequence
 from duckduckgo_search import DDGS
 
 from neat_ai_assistant.llm.open_ai_abstractions import ChatRequest
@@ -36,6 +36,14 @@ TOOL_PARAM_EXAMPLES = ToolParam(
 
 
 class SEOWriter(Tool):
+    """
+    Uses GPT 3.5 to write a SEO-style article given some information on the product & style advice.
+    Params:
+    - product (str): the product to write about
+    - keywords (str): relevant keywords for the article
+    - structure (str): structural advice & guidelines for the output
+    - examples (str): examples from good, similar articles
+    """
     def __init__(
         self,
         llm_wrapper: LLMWrapper,
@@ -43,27 +51,17 @@ class SEOWriter(Tool):
         company_description: str,
         name: str = "SEO Writer",
         description: str = "Write a SEO relevant article with some information.",
-        params: List[ToolParam] = [
+        params: Sequence[ToolParam] = [
             TOOL_PARAM_KEYWORDS,
             TOOL_PARAM_PRODUCT,
             TOOL_PARAM_STRUCTURE,
             TOOL_PARAM_EXAMPLES
         ]
-    ):
+    ) -> None:
         super().__init__(name, description, params)
         self.llm_wrapper = llm_wrapper
         self.company_name = company_name
         self.company_desciption = company_description
-
-    # @staticmethod
-    # def _build_faq(faq_string: str):
-    #     segments = faq_string.strip().split("\n\n")
-    #     qa_list = []
-    #     for segment in segments:
-    #         lines = segment.split("\n")
-    #         question = lines[0].replace("Question: ", "").strip()
-    #         answer = lines[1].replace("Answer: ", "").strip()
-    #         qa_list.append({"question": question, "answer": answer})
 
     def run(self, json_query: dict) -> ToolResult:
         self.legal_params(json_query)

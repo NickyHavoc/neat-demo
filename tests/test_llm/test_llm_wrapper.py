@@ -1,4 +1,3 @@
-from typing import List
 from aleph_alpha_client import CompletionRequest, CompletionResponse, Prompt, SemanticEmbeddingRequest, SemanticEmbeddingResponse, SemanticRepresentation
 
 from neat_ai_assistant.llm import ChatResponse
@@ -45,7 +44,7 @@ def test_aleph_alpha_symmetric_semantic_embedding():
             compress_to_size=128
         )
     )
-    responses: List[SemanticEmbeddingResponse] = llm_wrapper.aleph_alpha_batch_request(
+    responses: list[SemanticEmbeddingResponse] = llm_wrapper.aleph_alpha_batch_request(
         requests=[sym_embedding_request_1, sym_embedding_request_2]
     )
     assert all(isinstance(

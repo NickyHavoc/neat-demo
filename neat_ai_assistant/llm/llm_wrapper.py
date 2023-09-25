@@ -3,7 +3,7 @@ import tiktoken
 
 from math import sqrt
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Optional, Sequence, Union
+from typing import Sequence, Optional, Sequence, Union
 from aleph_alpha_client import (
     Client,
     CompletionRequest,
@@ -25,7 +25,7 @@ class LLMWrapper:
         self,
         aleph_alpha_token: str,
         open_ai_key: str
-    ):
+    ) -> None:
         """
         Wrapper class for Aleph Alpha and Open AI APIs.
         """
@@ -62,7 +62,7 @@ class LLMWrapper:
         )
 
     @staticmethod
-    def _get_alpha_alpha_api_tasks(requests: List[dict]):
+    def _get_alpha_alpha_api_tasks(requests: Sequence[dict]):
         """
         Finds the correct task for each request_dict.
         Useful if a large number of requests is send async and they require different API functions (e.g. complete, evaluate).
@@ -109,7 +109,7 @@ class LLMWrapper:
 
     def aleph_alpha_batch_request(
         self,
-        requests: List[dict],
+        requests: Sequence[dict],
         max_workers: int = 10,
         progress_bar: bool = False,
     ):
