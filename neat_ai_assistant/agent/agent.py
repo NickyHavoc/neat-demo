@@ -26,14 +26,13 @@ class NeatAgent:
         history: ConversationHistory,
         llm_wrapper: LLMWrapper,
         model: Literal["gpt-3.5-turbo", "gpt-4"] = "gpt-4",
-        require_reasoning: bool = True
+        require_reasoning: bool = True,
     ) -> None:
         if not all(isinstance(t, Tool) for t in tools):
             raise TypeError("All tools must be of type tool.")
         serialized_tool_names = [t.serialized_name for t in tools]
         if len(set(serialized_tool_names)) != len(serialized_tool_names):
-            raise ValueError(
-                "There is an overlap in tool names (after serializing).")
+            raise ValueError("There is an overlap in tool names (after serializing).")
         self.tools = tools
         self.llm_wrapper = llm_wrapper
         self.model = model
@@ -44,16 +43,14 @@ class NeatAgent:
             role="system",
             content="""You want to find the best answer to a user question.
 Answer the question ONLY using the functions you have been provided with.
-If you have a final answer, return this instead.""")
+If you have a final answer, return this instead.""",
+        )
 
         self.history = history
 
     def _get_tool_by_name(self, name: str) -> Optional[Tool]:
         for t in self.tools:
-            if name in [
-                t.name,
-                t.serialized_name
-            ]:
+            if name in [t.name, t.serialized_name]:
                 return t
 
     def _build_request(
@@ -61,9 +58,13 @@ If you have a final answer, return this instead.""")
         messages: Sequence[Message],
     ) -> dict:
         request = ChatRequest(
-            model=self.model, messages=messages, functions=[
-                t.get_as_request_for_function_call(
-                    self.require_reasoning) for t in self.tools])
+            model=self.model,
+            messages=messages,
+            functions=[
+                t.get_as_request_for_function_call(self.require_reasoning)
+                for t in self.tools
+            ],
+        )
         ommited_messages = []
         count = self.llm_wrapper.open_ai_count_tokens(request)
         while count > 4096:
@@ -102,40 +103,31 @@ If you think you gathered all necessary information, generate a final answer."""
                 function_call = completion.message.function_call
 
                 yield NeatAgentOutput(
-                    type="thought",
-                    text=function_call.arguments[self.reasoning_key]
+                    type="thought", text=function_call.arguments[self.reasoning_key]
                 )
                 tool_to_use = self._get_tool_by_name(function_call.name)
 
                 if bool(tool_to_use):
-                    arguments = function_call.get_args_except(
-                        [self.reasoning_key])
+                    arguments = function_call.get_args_except([self.reasoning_key])
                     tool_result = tool_to_use.run(arguments)
 
                 else:
-                    tool_result = ToolResult(
-                        results=[], source=function_call.name)
+                    tool_result = ToolResult(results=[], source=function_call.name)
 
                 tool_results.append(tool_result)
-                
+
                 if tool_result.final:
                     final_answer = tool_result.get_as_string()
 
                 else:
                     yield NeatAgentOutput(
                         type="function_call",
-                        text=f"Query:\n{json.dumps(arguments)}\n\n{tool_result.get_as_string()}"
+                        text=f"Query:\n{json.dumps(arguments)}\n\n{tool_result.get_as_string()}",
                     )
 
             else:
                 final_answer = completion.message.content
 
-        self.history.add_message(Message(
-            role="user",
-            content=message_string
-        ))
+        self.history.add_message(Message(role="user", content=message_string))
         self.history.add_message(completion.message)
-        yield NeatAgentOutput(
-            type="answer",
-            text=final_answer
-        )
+        yield NeatAgentOutput(type="answer", text=final_answer)

@@ -4,6 +4,6 @@ from .open_ai_abstractions import (
     ChatRequest,
     ChatRequestFunctionCall,
     ChatResponse,
-    Message
+    Message,
 )
 from .llm_wrapper import LLMWrapper

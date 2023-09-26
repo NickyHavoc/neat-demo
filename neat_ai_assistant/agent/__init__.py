@@ -1,13 +1,6 @@
-from .agent import (
-    NeatAgent,
-    NeatAgentOutput
-)
+from .agent import NeatAgent, NeatAgentOutput
 from .conversation_history import ConversationHistory
-from .tool import (
-    Tool,
-    ToolParam,
-    ToolResult
-)
+from .tool import Tool, ToolParam, ToolResult
 from .tools import (
     DocumentSearchTool,
     DuckDuckGoSearchTool,
@@ -15,5 +8,5 @@ from .tools import (
     QueryConversationHistoryTool,
     WeatherRetrievalTool,
     WebpageRetrievalTool,
-    SEOWriter
+    SEOWriter,
 )

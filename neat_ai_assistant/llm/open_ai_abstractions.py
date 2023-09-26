@@ -16,10 +16,7 @@ class ChatCompletionFunctionCall(BaseModel):
         return cls(**json_object)
 
     def to_open_ai_api_format(self):
-        return {
-            "name": self.name,
-            "arguments": json.dumps(self.arguments)
-        }
+        return {"name": self.name, "arguments": json.dumps(self.arguments)}
 
     def to_string(self):
         return json.dumps(self.model_dump())
@@ -35,27 +32,29 @@ class Message(BaseModel):
 
     @classmethod
     def from_json(cls, json_object: dict):
-        json_object.setdefault('function_call', None)
-        if json_object['function_call'] is not None:
-            json_object['function_call'] = ChatCompletionFunctionCall.from_json(
-                json_object['function_call'])
+        json_object.setdefault("function_call", None)
+        if json_object["function_call"] is not None:
+            json_object["function_call"] = ChatCompletionFunctionCall.from_json(
+                json_object["function_call"]
+            )
         return cls(**json_object)
 
     def to_json(self):
         if not bool(self.function_call):
             return {"role": self.role, "content": self.content}
         else:
-            return {"role": self.role, "content": self.content,
-                    "function_call": self.function_call.to_open_ai_api_format()}
+            return {
+                "role": self.role,
+                "content": self.content,
+                "function_call": self.function_call.to_open_ai_api_format(),
+            }
 
     def get_for_tokenization(self):
-        return {
-            "role": self.role
-        } | ({
-            "content": self.content
-        } if self.content else {
-            "function_call": self.function_call.to_string()
-        })
+        return {"role": self.role} | (
+            {"content": self.content}
+            if self.content
+            else {"function_call": self.function_call.to_string()}
+        )
 
 
 class ChatRequestFunctionCall(BaseModel):
@@ -74,7 +73,8 @@ class ChatRequest(BaseModel):
     @classmethod
     def from_json(cls, json_object: dict):
         json_object["messages"] = [
-            Message.from_json(m) for m in json_object["messages"]]
+            Message.from_json(m) for m in json_object["messages"]
+        ]
         return cls(**json_object)
 
     def to_json(self):
@@ -95,8 +95,7 @@ class ChatCompletion(BaseModel):
 
     @classmethod
     def from_json(cls, json_object: dict):
-        json_object['message'] = Message.from_json(
-            json_object['message'])
+        json_object["message"] = Message.from_json(json_object["message"])
         return cls(**json_object)
 
 
@@ -106,7 +105,8 @@ class ChatResponse(BaseModel):
 
     @classmethod
     def from_json(cls, json_object: dict):
-        completions = [ChatCompletion.from_json(
-            choice) for choice in json_object.pop('choices')]
+        completions = [
+            ChatCompletion.from_json(choice) for choice in json_object.pop("choices")
+        ]
         json_object["usage"] = dict(json_object["usage"])
         return cls(metadata=dict(json_object), completions=completions)

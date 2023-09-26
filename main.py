@@ -15,7 +15,7 @@ from neat_ai_assistant.agent import (
     QueryConversationHistoryTool,
     WeatherRetrievalTool,
     WebpageRetrievalTool,
-    SEOWriter
+    SEOWriter,
 )
 from neat_ai_assistant.documents import DocumentMinion
 from neat_ai_assistant.llm import LLMWrapper
@@ -36,43 +36,28 @@ OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
 OPEN_WEATHER_MAP_API_KEY = os.getenv("OPEN_WEATHER_MAP_API_KEY")
 ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
-llm_wrapper = LLMWrapper(
-    aleph_alpha_token=ALEPH_ALPHA_TOKEN,
-    open_ai_key=OPEN_AI_KEY
-)
+llm_wrapper = LLMWrapper(aleph_alpha_token=ALEPH_ALPHA_TOKEN, open_ai_key=OPEN_AI_KEY)
 documents_path = Path(__file__).parent / "car_subsidy_documents" / "documents"
-doc_minion = DocumentMinion(
-    llm_wrapper,
-    documents_path
-)
-doc_minion.instantiate_database(
-    update=False
-)
+doc_minion = DocumentMinion(llm_wrapper, documents_path)
+doc_minion.instantiate_database(update=False)
 history = ConversationHistory()
 tools = [
     WebpageRetrievalTool(),
     SEOWriter(
         llm_wrapper=llm_wrapper,
         company_name="Makro",
-        company_description="Makro is a Dutch wholesaler that operates globally."
+        company_description="Makro is a Dutch wholesaler that operates globally.",
     ),
     DuckDuckGoSearchTool(),
     # DocumentSearchTool.from_document_minion(
     #     document_minion=doc_minion
     # ),
-    QueryConversationHistoryTool(
-        history=history
-    ),
+    QueryConversationHistoryTool(history=history),
     # WeatherRetrievalTool(
     #     open_weather_map_api_key=OPEN_WEATHER_MAP_API_KEY
     # )
 ]
-agent = NeatAgent(
-    tools=tools,
-    history=history,
-    llm_wrapper=llm_wrapper,
-    model="gpt-4"
-)
+agent = NeatAgent(tools=tools, history=history, llm_wrapper=llm_wrapper, model="gpt-4")
 
 
 @app.get("/chat")
@@ -80,4 +65,5 @@ async def chat(user_message: str):
     async def event_generator():
         for message in agent.reply_to(user_message):
             yield json.dumps(message.model_dump())
+
     return EventSourceResponse(event_generator())

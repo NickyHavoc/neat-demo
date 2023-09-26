@@ -21,11 +21,7 @@ from .open_ai_abstractions import ChatResponse, ChatRequest
 
 
 class LLMWrapper:
-    def __init__(
-        self,
-        aleph_alpha_token: str,
-        open_ai_key: str
-    ) -> None:
+    def __init__(self, aleph_alpha_token: str, open_ai_key: str) -> None:
         """
         Wrapper class for Aleph Alpha and Open AI APIs.
         """
@@ -98,8 +94,7 @@ class LLMWrapper:
                 tasks.append(Client.tokenize)
 
             else:
-                raise ValueError(
-                    f"Request type not allowed, got {request_type}.")
+                raise ValueError(f"Request type not allowed, got {request_type}.")
 
         return tasks
 
@@ -148,19 +143,13 @@ class LLMWrapper:
         score = sumxy / sqrt(sumxx * sumyy)
         return (score + 1) / 2
 
-    def open_ai_chat_complete(
-        self,
-        request: ChatRequest
-    ) -> ChatResponse:
+    def open_ai_chat_complete(self, request: ChatRequest) -> ChatResponse:
         if not isinstance(request, ChatRequest):
             raise TypeError("request must be of type OpenAIChatRequest.")
         response = openai.ChatCompletion.create(**request.to_json())
         return ChatResponse.from_json(response)
 
-    def open_ai_count_tokens(
-        self,
-        request: ChatRequest
-    ):
+    def open_ai_count_tokens(self, request: ChatRequest):
         """Returns the number of tokens used by a list of messages."""
         if not isinstance(request, ChatRequest):
             raise TypeError("request must be of type OpenAIChatRequest.")

@@ -27,7 +27,7 @@ Copy code
 # Create a new virtual environment within the project directory
 poetry shell
 
-# The previous command will also activate the new environment. 
+# The previous command will also activate the new environment.
 # Now, you can install the dependencies in this environment:
 poetry install
 ```

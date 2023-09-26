@@ -13,25 +13,25 @@ TOOL_PARAM_PRODUCT = ToolParam(
     name="product",
     type="string",
     description="Product to write the article for.",
-    required=True
+    required=True,
 )
 TOOL_PARAM_KEYWORDS = ToolParam(
     name="keywords",
     type="string",
     description="A comma-separated list of keywords that are relevant for the article.",
-    required=True
+    required=True,
 )
 TOOL_PARAM_STRUCTURE = ToolParam(
     name="structure",
     type="string",
     description="Approximate length, structural requirements, language requirements, writing advice for the article.",
-    required=True
+    required=True,
 )
 TOOL_PARAM_EXAMPLES = ToolParam(
     name="examples",
     type="string",
     description="Examples of great sentences or short text excerpts that should be considered.",
-    required=True
+    required=True,
 )
 
 
@@ -44,6 +44,7 @@ class SEOWriter(Tool):
     - structure (str): structural advice & guidelines for the output
     - examples (str): examples from good, similar articles
     """
+
     def __init__(
         self,
         llm_wrapper: LLMWrapper,
@@ -55,8 +56,8 @@ class SEOWriter(Tool):
             TOOL_PARAM_KEYWORDS,
             TOOL_PARAM_PRODUCT,
             TOOL_PARAM_STRUCTURE,
-            TOOL_PARAM_EXAMPLES
-        ]
+            TOOL_PARAM_EXAMPLES,
+        ],
     ) -> None:
         super().__init__(name, description, params)
         self.llm_wrapper = llm_wrapper
@@ -71,7 +72,7 @@ class SEOWriter(Tool):
                 "role": "system",
                 "content": f"""You are a SEO writing engine. Based on some inputs, you write an article that advertises a given product and is readable and includes relevant keywords and more. Use markdown notation.
 You work for {self.company_name}. {self.company_desciption}
-Do not mention the competition."""
+Do not mention the competition.""",
             },
             {
                 "role": "user",
@@ -89,16 +90,15 @@ Your SEO article
 # FAQ
 **Question**: each question
 **Answer**: each answer
-```"""
-            }
+```""",
+            },
         ]
         response = self.llm_wrapper.open_ai_chat_complete(
             request=ChatRequest.from_json(
-                {
-                    "messages": messages,
-                    "model": "gpt-3.5-turbo"
-                }
+                {"messages": messages, "model": "gpt-3.5-turbo"}
             )
         )
 
-        return self._build_tool_result([response.completions[0].message.content], final=True)
+        return self._build_tool_result(
+            [response.completions[0].message.content], final=True
+        )

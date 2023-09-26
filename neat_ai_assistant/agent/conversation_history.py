@@ -16,4 +16,5 @@ class ConversationHistory:
     def get_as_string_list(self, n: int) -> list[str]:
         def build_message_string(m: Message):
             return f"{m.role}: {m.content}"
+
         return [build_message_string(m) for m in self.history[-n:]]

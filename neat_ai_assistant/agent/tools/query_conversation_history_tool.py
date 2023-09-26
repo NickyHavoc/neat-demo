@@ -7,7 +7,7 @@ TOOL_PARAM_N = ToolParam(
     name="n",
     type="integer",
     description="The number of last messages to retrieve. Default: 4.",
-    required=True
+    required=True,
 )
 
 
@@ -17,14 +17,13 @@ class QueryConversationHistoryTool(Tool):
     Params:
     - n (int): the number of last messages to be retrieved
     """
+
     def __init__(
         self,
         history: ConversationHistory,
         name: str = "Retrieve Conversation History",
         description: str = "If a question is lacking context, retrieve the prior conversation history to gather more information.",
-        params: Sequence[ToolParam] = [
-            TOOL_PARAM_N
-        ]
+        params: Sequence[ToolParam] = [TOOL_PARAM_N],
     ) -> None:
         super().__init__(name, description, params)
         self.history = history

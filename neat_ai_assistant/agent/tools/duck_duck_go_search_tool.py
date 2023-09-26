@@ -8,12 +8,13 @@ TOOL_PARAM_N = ToolParam(
     name="n",
     type="integer",
     description="The number of pages to obtain. Set to higher value for greater hit rate. Default: 5.",
-    required=True)
+    required=True,
+)
 TOOL_PARAM_QUERY = ToolParam(
     name="query",
     type="string",
     description="A query to search the internet with.",
-    required=True
+    required=True,
 )
 
 
@@ -24,14 +25,12 @@ class DuckDuckGoSearchTool(Tool):
     - n (int): number of pages
     - query (str): search query
     """
+
     def __init__(
         self,
         name: str = "DuckDuckGo Search Engine",
         description: str = "Find information directly from the internet.",
-        params: Sequence[ToolParam] = [
-            TOOL_PARAM_N,
-            TOOL_PARAM_QUERY
-        ]
+        params: Sequence[ToolParam] = [TOOL_PARAM_N, TOOL_PARAM_QUERY],
     ) -> None:
         super().__init__(name, description, params)
 
@@ -39,10 +38,7 @@ class DuckDuckGoSearchTool(Tool):
         self.legal_params(json_query)
 
         def construct_result_string(r: Dict[str, str]) -> str:
-            return "{title}\n{body}".format(
-                title=r["title"],
-                body=r["body"]
-            )
+            return "{title}\n{body}".format(title=r["title"], body=r["body"])
 
         results = []
         with DDGS(timeout=5) as ddgs:

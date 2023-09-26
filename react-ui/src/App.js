@@ -96,7 +96,7 @@ function App() {
   const bottomRef = useRef();
 
   const sendMessage = async (e) => {
-    e.preventDefault(); 
+    e.preventDefault();
     if (!message.trim()) return;
     setLoading(true);
 
@@ -117,7 +117,7 @@ function App() {
         .map(msg => msg.replace('data: ', ''))
         .forEach(jsonPart => {
           const botMessage = { ...JSON.parse(jsonPart), sender: 'bot' };
-          
+
           // Check if message is an image and decode it
           if (botMessage.type === 'image') {
             botMessage.text = `data:image/png;base64,${botMessage.text}`;

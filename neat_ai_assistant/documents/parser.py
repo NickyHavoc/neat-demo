@@ -17,7 +17,7 @@ class Parser:
 
     def parse_pdf(self, file_path: Path) -> Sequence[str]:
         content = []
-        with open(file_path, 'rb') as file:
+        with open(file_path, "rb") as file:
             pdf_reader = PyPDF2.PdfReader(file)
             for page_num in range(len(pdf_reader.pages)):
                 page = pdf_reader.pages[page_num]
@@ -28,7 +28,7 @@ class Parser:
         content = []
         df = pd.read_excel(file_path)
         for _, row in df.iterrows():
-            row_content = ' '.join(row.astype(str).values.tolist())
+            row_content = " ".join(row.astype(str).values.tolist())
             content.append(row_content)
         return content
 
@@ -49,21 +49,21 @@ class Parser:
         return content
 
     def parse_txt(self, file_path: Path) -> Sequence[str]:
-        with open(file_path, 'r') as file:
+        with open(file_path, "r") as file:
             content = file.readlines()
         return content
 
     def parse_file(self, file_path: Path) -> Sequence[str]:
         file_extension = file_path.suffix.lower()
-        if file_extension == '.pdf':
+        if file_extension == ".pdf":
             content = self.parse_pdf(file_path)
-        elif file_extension == '.xlsx':
+        elif file_extension == ".xlsx":
             content = self.parse_xlsx(file_path)
-        elif file_extension == '.docx':
+        elif file_extension == ".docx":
             content = self.parse_word(file_path)
-        elif file_extension == '.pptx':
+        elif file_extension == ".pptx":
             content = self.parse_ppt(file_path)
-        elif file_extension == '.txt':
+        elif file_extension == ".txt":
             content = self.parse_txt(file_path)
         else:
             raise ValueError(f"Unsupported file type: {file_path.suffix}")
