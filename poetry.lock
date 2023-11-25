@@ -46,7 +46,7 @@ trio = ["trio (<0.22)"]
 name = "beautifulsoup4"
 version = "4.12.2"
 description = "Screen-scraping library"
-optional = false
+optional = true
 python-versions = ">=3.6.0"
 files = [
     {file = "beautifulsoup4-4.12.2-py3-none-any.whl", hash = "sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a"},
@@ -235,7 +235,7 @@ cffi = ">=1.0.0"
 name = "bs4"
 version = "0.0.1"
 description = "Dummy package for Beautiful Soup"
-optional = false
+optional = true
 python-versions = "*"
 files = [
     {file = "bs4-0.0.1.tar.gz", hash = "sha256:36ecea1fd7cc5c0c6e4a1ff075df26d50da647b75376626cc186e2212886dd3a"},
@@ -535,7 +535,7 @@ typing = ["typing-extensions (>=4.8)"]
 name = "geographiclib"
 version = "2.0"
 description = "The geodesic routines from GeographicLib"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "geographiclib-2.0-py3-none-any.whl", hash = "sha256:6b7225248e45ff7edcee32becc4e0a1504c606ac5ee163a5656d482e0cd38734"},
@@ -546,7 +546,7 @@ files = [
 name = "geopy"
 version = "2.4.1"
 description = "Python Geocoding Toolbox"
-optional = false
+optional = true
 python-versions = ">=3.7"
 files = [
     {file = "geopy-2.4.1-py3-none-any.whl", hash = "sha256:ae8b4bc5c1131820f4d75fce9d4aaaca0c85189b3aa5d64c3dcaf5e3b7b882a7"},
@@ -1358,7 +1358,7 @@ files = [
 name = "soupsieve"
 version = "2.5"
 description = "A modern CSS selector implementation for Beautiful Soup."
-optional = false
+optional = true
 python-versions = ">=3.8"
 files = [
     {file = "soupsieve-2.5-py3-none-any.whl", hash = "sha256:eaa337ff55a1579b6549dc679565eac1e3d000563bcb1c8ab0d0fefbc0c2cdc7"},
@@ -1568,7 +1568,10 @@ platformdirs = ">=3.9.1,<5"
 docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2)", "sphinx-argparse (>=0.4)", "sphinxcontrib-towncrier (>=0.2.1a0)", "towncrier (>=23.6)"]
 test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8)", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10)"]
 
+[extras]
+tool-extension = ["bs4", "geopy"]
+
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11.4"
-content-hash = "7ad11b9ea12de8ab2e6fa6443d7b8fa91a24909bfc17d9c87a0db60e5a8b8970"
+content-hash = "d00eef8f631f60c2430be5f7c38ee534826164c9e3a0d3f53ff40678fe3f7d48"

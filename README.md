@@ -16,11 +16,10 @@ cd neat-demo
 poetry install
 ```
 
-If you want to create a new virtual environment for the project using Poetry, you can do so:
+If you want to use some extra tools that require special dependencies you can install them like so:
 
 ``` console
-poetry shell
-poetry install
+poetry install -E tool-extension
 ```
 
 ## Create your `.env` file
