@@ -2,7 +2,6 @@ import json
 from typing import Any, Mapping, Sequence
 
 from pytest import fixture
-
 from neat_ai_assistant import Message, Model, OpenaiWrapper
 
 

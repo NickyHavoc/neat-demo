@@ -4,7 +4,7 @@ import requests
 
 from ..tool import Tool, ToolParam, ToolResult
 
-# ToDos:
+# TODO:
 # - add search/retrieval modes
 
 

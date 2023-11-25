@@ -1,12 +1,12 @@
-import time
 from enum import Enum
 from functools import wraps
+import time
 from typing import Any, Callable, Generator, Literal, Mapping, Sequence, TypeVar, cast
 
 import openai
-import tiktoken
 from openai.types.chat import ChatCompletion
 from pydantic import BaseModel
+import tiktoken
 
 
 class Model(Enum):
