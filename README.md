@@ -2,7 +2,6 @@
 
 neat is a ReAct-like agent accessing all sorts of data & APIs
 
-
 ## Install editable with https
 
 This project uses [Poetry](https://python-poetry.org/) for dependency management. If you haven't installed Poetry yet, you can do so by following the instructions on the official website.

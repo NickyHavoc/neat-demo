@@ -6,14 +6,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette import EventSourceResponse
 
-from neat_ai_assistant.agent import (
+from neat_ai_assistant import (
     ConversationHistory,
     DuckDuckGoSearchTool,
     NeatAgent,
     QueryConversationHistoryTool,
     WebpageRetrievalTool,
+    Model,
+    OpenaiWrapper
 )
-from neat_ai_assistant.llm import OpenaiWrapper
 
 app = FastAPI()
 app.add_middleware(
@@ -30,9 +31,7 @@ OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
 OPEN_WEATHER_MAP_API_KEY = os.getenv("OPEN_WEATHER_MAP_API_KEY")
 ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
-llm_wrapper = OpenaiWrapper(
-    aleph_alpha_token=ALEPH_ALPHA_TOKEN, open_ai_key=OPEN_AI_KEY
-)
+openai_wrapper = OpenaiWrapper()
 history = ConversationHistory()
 tools = [
     WebpageRetrievalTool(),
@@ -40,7 +39,7 @@ tools = [
     QueryConversationHistoryTool(history=history),
 ]
 agent = NeatAgent(
-    tools=tools, history=history, openai_wrapper=llm_wrapper, model="gpt-4"
+    openai_wrapper=openai_wrapper, tools=tools, history=history, model=Model.GPT_4
 )
 
 
