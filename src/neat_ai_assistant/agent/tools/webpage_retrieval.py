@@ -1,12 +1,11 @@
 import re
-import requests
+from typing import Any, Mapping, Optional, Sequence
 
-from typing import Optional, Sequence
-from duckduckgo_search import DDGS
+import requests
 from bs4 import BeautifulSoup, Tag
+from duckduckgo_search import DDGS  # type: ignore
 
 from ..tool import Tool, ToolParam, ToolResult
-
 
 TOOL_PARAM_N = ToolParam(
     name="n",
@@ -48,17 +47,18 @@ class WebpageRetrievalTool(Tool):
 
         headers: Sequence[Tag] = soup.find_all(["h2", "h3", "h4", "h5", "h6"])
         if not bool(headers):
-            return
+            return None
 
-        sections: Sequence[str] = []
+        sections: list[str] = []
 
         for header in headers:
-            section_text: Sequence[str] = [header.text]
+            section_text: list[str] = [header.text]
             for sibling in header.find_all_next():
-                if sibling.name and sibling.name.startswith("h"):
-                    break
-                elif sibling.name == "p":
-                    section_text.append(sibling.text)
+                if isinstance(sibling, Tag):
+                    if sibling.name and sibling.name.startswith("h"):
+                        break
+                    elif sibling.name == "p":
+                        section_text.append(sibling.text)
 
             if len(section_text) > 1:
                 sections.append("\n".join(section_text))
@@ -66,13 +66,13 @@ class WebpageRetrievalTool(Tool):
 
         return cut_text(clean_scraped_text(body_text))
 
-    def run(self, json_query: dict) -> ToolResult:
+    def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
 
         def construct_result_string(title: str, body: str) -> str:
             return "{title}\n\n{body}".format(title=title, body=body)
 
-        prelim_results = []
+        prelim_results: list[Mapping[str, str | None]] = []
         with DDGS(timeout=5) as ddgs:
             for i, r in enumerate(ddgs.text(json_query["query"])):
                 if i >= json_query["n"]:
@@ -81,9 +81,11 @@ class WebpageRetrievalTool(Tool):
 
         results = []
         for r in prelim_results:
-            long_text = self._scrape_body_text(r["href"])
+            long_text = self._scrape_body_text(r.get("href"))
             if not bool(long_text):
-                long_text = r["body"]
-            results.append(construct_result_string(title=r["title"], body=long_text))
+                long_text = r.get("body")
+            results.append(
+                construct_result_string(title=r.get("title", ""), body=long_text or "")
+            )
 
-        return self._build_tool_result(results)
+        return self.to_result(results)

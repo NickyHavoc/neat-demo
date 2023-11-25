@@ -1,13 +1,7 @@
-from os import stat
-from typing import Dict, Sequence
-from duckduckgo_search import DDGS
+from typing import Any, Mapping, Sequence
 
-from neat_ai_assistant.llm.open_ai_abstractions import ChatRequest
-
+from ...llm.openai_wrapper import Model, OpenaiWrapper
 from ..tool import Tool, ToolParam, ToolResult
-
-from ...llm import LLMWrapper
-
 
 TOOL_PARAM_PRODUCT = ToolParam(
     name="product",
@@ -47,7 +41,7 @@ class SEOWriter(Tool):
 
     def __init__(
         self,
-        llm_wrapper: LLMWrapper,
+        llm_wrapper: OpenaiWrapper,
         company_name: str,
         company_description: str,
         name: str = "SEO Writer",
@@ -60,11 +54,11 @@ class SEOWriter(Tool):
         ],
     ) -> None:
         super().__init__(name, description, params)
-        self.llm_wrapper = llm_wrapper
+        self.openai_wrapper = llm_wrapper
         self.company_name = company_name
         self.company_desciption = company_description
 
-    def run(self, json_query: dict) -> ToolResult:
+    def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
 
         messages = [
@@ -93,12 +87,6 @@ Your SEO article
 ```""",
             },
         ]
-        response = self.llm_wrapper.open_ai_chat_complete(
-            request=ChatRequest.from_json(
-                {"messages": messages, "model": "gpt-3.5-turbo"}
-            )
-        )
-
-        return self._build_tool_result(
-            [response.completions[0].message.content], final=True
-        )
+        response = self.openai_wrapper.chat_complete(messages, Model.GPT_3_5)
+        content = response.choices[0].message.content
+        return self.to_result([content] if content else [], final=True)

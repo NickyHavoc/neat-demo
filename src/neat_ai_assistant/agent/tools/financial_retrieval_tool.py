@@ -1,9 +1,8 @@
+from typing import Any, Mapping, Sequence
+
 import requests
 
-from typing import Sequence
-
 from ..tool import Tool, ToolParam, ToolResult
-
 
 # ToDos:
 # - add search/retrieval modes
@@ -35,7 +34,7 @@ class FinancialRetrievalTool(Tool):
         self.api_key = alpha_vantage_api_key
         self.url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={api_key}"
 
-    def run(self, json_query: dict) -> ToolResult:
+    def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
         symbol = json_query["stock_trading_symbol"]
         url = self.url.format(symbol=symbol, api_key=self.api_key)
@@ -47,6 +46,6 @@ class FinancialRetrievalTool(Tool):
         close_value = response_json["Time Series (5min)"][
             list(response_json["Time Series (5min)"].keys())[0]
         ]["4. close"]
-        return self._build_tool_result(
+        return self.to_result(
             [f"open_value: {open_value}", f"close_value: {close_value}"]
         )

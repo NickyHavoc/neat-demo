@@ -1,7 +1,7 @@
-from typing import Sequence
-from ..tool import Tool, ToolParam, ToolResult
-from ..conversation_history import ConversationHistory
+from typing import Any, Mapping, Sequence
 
+from ..conversation_history import ConversationHistory
+from ..tool import Tool, ToolParam, ToolResult
 
 TOOL_PARAM_N = ToolParam(
     name="n",
@@ -28,9 +28,9 @@ class QueryConversationHistoryTool(Tool):
         super().__init__(name, description, params)
         self.history = history
 
-    def run(self, json_query: dict) -> ToolResult:
+    def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
         # Idea: retrieve conversation history by embeddings of messages.
         # Disadvantage: may lose context between messages
         results = self.history.get_as_string_list(n=json_query["n"])
-        return self._build_tool_result(results)
+        return self.to_result(results)

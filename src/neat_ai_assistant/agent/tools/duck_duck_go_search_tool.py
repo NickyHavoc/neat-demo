@@ -1,8 +1,8 @@
-from typing import Dict, Sequence
-from duckduckgo_search import DDGS
+from typing import Any, Dict, Mapping, Sequence
+
+from duckduckgo_search import DDGS  # type: ignore
 
 from ..tool import Tool, ToolParam, ToolResult
-
 
 TOOL_PARAM_N = ToolParam(
     name="n",
@@ -34,7 +34,7 @@ class DuckDuckGoSearchTool(Tool):
     ) -> None:
         super().__init__(name, description, params)
 
-    def run(self, json_query: dict) -> ToolResult:
+    def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
 
         def construct_result_string(r: Dict[str, str]) -> str:
@@ -47,4 +47,4 @@ class DuckDuckGoSearchTool(Tool):
                     break
                 results.append(construct_result_string(r))
 
-        return self._build_tool_result(results)
+        return self.to_result(results)

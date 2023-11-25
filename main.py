@@ -1,23 +1,19 @@
 import json
 import os
 
-from pathlib import Path
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sse_starlette import EventSourceResponse
-from dotenv import load_dotenv
 
 from neat_ai_assistant.agent import (
-    NeatAgent,
     ConversationHistory,
     DuckDuckGoSearchTool,
+    NeatAgent,
     QueryConversationHistoryTool,
-    WeatherRetrievalTool,
     WebpageRetrievalTool,
-    SEOWriter,
 )
-from neat_ai_assistant.llm import LLMWrapper
-
+from neat_ai_assistant.llm import OpenaiWrapper
 
 app = FastAPI()
 app.add_middleware(
@@ -34,22 +30,18 @@ OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
 OPEN_WEATHER_MAP_API_KEY = os.getenv("OPEN_WEATHER_MAP_API_KEY")
 ALPHA_VANTAGE_API_KEY = os.getenv("ALPHA_VANTAGE_API_KEY")
 
-llm_wrapper = LLMWrapper(aleph_alpha_token=ALEPH_ALPHA_TOKEN, open_ai_key=OPEN_AI_KEY)
+llm_wrapper = OpenaiWrapper(
+    aleph_alpha_token=ALEPH_ALPHA_TOKEN, open_ai_key=OPEN_AI_KEY
+)
 history = ConversationHistory()
 tools = [
     WebpageRetrievalTool(),
-    # SEOWriter(
-    #     llm_wrapper=llm_wrapper,
-    #     company_name="Makro",
-    #     company_description="Makro is a Dutch wholesaler that operates globally.",
-    # ),
     DuckDuckGoSearchTool(),
     QueryConversationHistoryTool(history=history),
-    # WeatherRetrievalTool(
-    #     open_weather_map_api_key=OPEN_WEATHER_MAP_API_KEY
-    # )
 ]
-agent = NeatAgent(tools=tools, history=history, llm_wrapper=llm_wrapper, model="gpt-4")
+agent = NeatAgent(
+    tools=tools, history=history, openai_wrapper=llm_wrapper, model="gpt-4"
+)
 
 
 @app.get("/chat")

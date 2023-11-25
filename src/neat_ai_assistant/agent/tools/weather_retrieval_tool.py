@@ -1,13 +1,12 @@
-from pydantic import BaseModel
-import requests
-
-from typing import Sequence, Optional
 from datetime import datetime
-from geopy.geocoders import Nominatim
-from geopy.location import Location
+from typing import Any, Mapping, Optional, Sequence
+
+import requests
+from geopy.geocoders import Nominatim  # type: ignore
+from geopy.location import Location  # type: ignore
+from pydantic import BaseModel
 
 from ..tool import Tool, ToolParam, ToolResult
-
 
 TOOL_PARAM_LOCATION = ToolParam(
     name="location",
@@ -16,11 +15,11 @@ TOOL_PARAM_LOCATION = ToolParam(
     required=True,
 )
 DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-CURRENT_DATETIME = datetime.now().strftime(DATETIME_FORMAT)
+CURRENT_DATETIME = datetime.now()  # TODO: should be somewhere else
 TOOL_PARAM_DATETIME = ToolParam(
     name="datetime",
     type="string",
-    description=f'Current datetime: "{CURRENT_DATETIME}". Return the desired time associated with the weather request in this format: "{DATETIME_FORMAT}".',
+    description=f'Current datetime: "{CURRENT_DATETIME.strftime(DATETIME_FORMAT)}". Return the desired time associated with the weather request in this format: "{DATETIME_FORMAT}".',
     required=True,
 )
 
@@ -80,8 +79,10 @@ class WeatherRetrievalTool(Tool):
             return None
 
     @staticmethod
-    def _build_weather_result(weather_info: dict, city_info: dict) -> WeatherResult:
-        def degrees_to_cardinal(d: int):
+    def _build_weather_result(
+        weather_info: Mapping[str, Any], city_info: Mapping[str, Any]
+    ) -> WeatherResult:
+        def degrees_to_cardinal(d: int) -> str:
             dirs = [
                 "N",
                 "NNE",
@@ -121,20 +122,17 @@ class WeatherRetrievalTool(Tool):
         )
 
     def _get_weather(
-        self, lat: float, lon: float, desired_datetime: str
+        self, lat: float, lon: float, desired_datetime_str: str
     ) -> WeatherResult:
         url = "https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={api_key}"
         request_url = url.format(lat=str(lat), lon=str(lon), api_key=self.api_key)
         response = requests.get(request_url)
         response_json = response.json()
 
-        def to_datetime(datetime_str) -> Optional[datetime]:
-            try:
-                return datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
-            except ValueError:
-                return None
+        def to_datetime(datetime_str: str) -> datetime:
+            return datetime.strptime(datetime_str, "%Y-%m-%d %H:%M:%S")
 
-        desired_datetime = to_datetime(desired_datetime) or CURRENT_DATETIME
+        desired_datetime = to_datetime(desired_datetime_str) or CURRENT_DATETIME
         weather_info, city_info = response_json["list"], response_json["city"]
         relevant_weather_info = min(
             weather_info,
@@ -144,15 +142,15 @@ class WeatherRetrievalTool(Tool):
         )
         return self._build_weather_result(relevant_weather_info, city_info)
 
-    def run(self, json_query: dict) -> ToolResult:
+    def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
 
         coordinates = self._get_coordinates(json_query["location"])
-        if not bool(coordinates):
+        if coordinates is None:
             results = []
         else:
             lat, lon = coordinates
             weather_result = self._get_weather(lat, lon, json_query["datetime"])
             results = [weather_result.to_string()]
 
-        return self._build_tool_result(results)
+        return self.to_result(results)
