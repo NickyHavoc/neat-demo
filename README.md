@@ -4,11 +4,30 @@ neat is a ReAct-like agent accessing all sorts of data & APIs
 
 ![In case you were wondering how the agent does this.](https://github.com/NickyHavoc/neat-demo/blob/main/neat_ai_assistant.png)
 
-## Clone the repo and install dependencies
+## Getting started
 
 This project uses [Poetry](https://python-poetry.org/) for dependency management. If you haven't installed Poetry yet, you can do so by following the instructions on the official website.
 
-Once you have Poetry installed, clone the repository and install the dependencies as follows:
+Sidenote: poetry >>> conda & pip.
+
+Once you have Poetry installed, you have 2 options.
+
+### Include it in your dependencies
+
+``` toml
+[tool.poetry.dependencies]
+neat-ai-assistant = {git = "https://github.com/NickyHavoc/neat-demo.git", branch="main"}
+```
+
+Needless to say, you need poetry set up in your environment to do this.
+
+Optionally, you can include some extra dependencies:
+
+``` toml
+neat-ai-assistant = {git = "https://github.com/NickyHavoc/neat-demo.git", branch="main", extras = ["tool-extension"]}
+```
+
+### Clone the repo
 
 ```console
 git clone https://github.com/NickyHavoc/neat-demo.git

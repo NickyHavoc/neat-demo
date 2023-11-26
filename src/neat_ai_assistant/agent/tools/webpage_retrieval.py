@@ -2,10 +2,15 @@ import re
 from typing import Any, Mapping, Optional, Sequence
 
 import requests
-from bs4 import BeautifulSoup, Tag
 from duckduckgo_search import DDGS  # type: ignore
 
 from ..tool import Tool, ToolParam, ToolResult
+
+try:
+    from bs4 import BeautifulSoup, Tag
+    BS4_AVAILABLE = True
+except:
+    BS4_AVAILABLE = False
 
 TOOL_PARAM_N = ToolParam(
     name="n",
@@ -68,6 +73,9 @@ class WebpageRetrievalTool(Tool):
 
     def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
+
+        if not BS4_AVAILABLE:
+            raise RuntimeError("This tool requires 'bs4'. Please install the extra 'tool-extension'.")
 
         def construct_result_string(title: str, body: str) -> str:
             return "{title}\n\n{body}".format(title=title, body=body)

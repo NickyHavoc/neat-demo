@@ -2,11 +2,16 @@ from datetime import datetime
 from typing import Any, Mapping, Optional, Sequence
 
 import requests
-from geopy.geocoders import Nominatim  # type: ignore
-from geopy.location import Location  # type: ignore
 from pydantic import BaseModel
 
 from ..tool import Tool, ToolParam, ToolResult
+
+try:
+    from geopy.geocoders import Nominatim  # type: ignore
+    from geopy.location import Location  # type: ignore
+    GEOPY_AVAILABLE = True
+except:
+    GEOPY_AVAILABLE = False
 
 TOOL_PARAM_LOCATION = ToolParam(
     name="location",
@@ -24,7 +29,7 @@ TOOL_PARAM_DATETIME = ToolParam(
 )
 
 
-class WeatherResult(BaseModel):
+class _WeatherResult(BaseModel):
     city: str
     country: str
     sunrise_today: datetime
@@ -81,7 +86,7 @@ class WeatherRetrievalTool(Tool):
     @staticmethod
     def _build_weather_result(
         weather_info: Mapping[str, Any], city_info: Mapping[str, Any]
-    ) -> WeatherResult:
+    ) -> _WeatherResult:
         def degrees_to_cardinal(d: int) -> str:
             dirs = [
                 "N",
@@ -104,7 +109,7 @@ class WeatherRetrievalTool(Tool):
             ix = round(d / (360.0 / len(dirs)))
             return dirs[ix % len(dirs)]
 
-        return WeatherResult(
+        return _WeatherResult(
             city=city_info["name"],
             country=city_info["country"],
             sunrise_today=datetime.fromtimestamp(city_info["sunrise"]),
@@ -123,7 +128,7 @@ class WeatherRetrievalTool(Tool):
 
     def _get_weather(
         self, lat: float, lon: float, desired_datetime_str: str
-    ) -> WeatherResult:
+    ) -> _WeatherResult:
         url = "https://api.openweathermap.org/data/2.5/forecast?lat={lat}&lon={lon}&appid={api_key}"
         request_url = url.format(lat=str(lat), lon=str(lon), api_key=self.api_key)
         response = requests.get(request_url)
@@ -144,6 +149,9 @@ class WeatherRetrievalTool(Tool):
 
     def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
         self.legal_params(json_query)
+
+        if not GEOPY_AVAILABLE:
+            raise RuntimeError("This tool requires 'geopy'. Please install the extra 'tool-extension'.")
 
         coordinates = self._get_coordinates(json_query["location"])
         if coordinates is None:
