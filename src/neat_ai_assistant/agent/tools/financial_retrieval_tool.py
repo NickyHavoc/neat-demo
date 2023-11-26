@@ -35,7 +35,6 @@ class FinancialRetrievalTool(Tool):
         self.url = "https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol={symbol}&interval=5min&apikey={api_key}"
 
     def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
-        self.legal_params(json_query)
         symbol = json_query["stock_trading_symbol"]
         url = self.url.format(symbol=symbol, api_key=self.api_key)
         response = requests.get(url)

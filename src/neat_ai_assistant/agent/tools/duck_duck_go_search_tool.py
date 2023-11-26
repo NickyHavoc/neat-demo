@@ -35,8 +35,6 @@ class DuckDuckGoSearchTool(Tool):
         super().__init__(name, description, params)
 
     def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
-        self.legal_params(json_query)
-
         def construct_result_string(r: Dict[str, str]) -> str:
             return "{title}\n{body}".format(title=r["title"], body=r["body"])
 

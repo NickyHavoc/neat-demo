@@ -29,8 +29,5 @@ class QueryConversationHistoryTool(Tool):
         self.history = history
 
     def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
-        self.legal_params(json_query)
-        # Idea: retrieve conversation history by embeddings of messages.
-        # Disadvantage: may lose context between messages
         results = self.history.get_as_string_list(n=json_query["n"])
         return self.to_result(results)

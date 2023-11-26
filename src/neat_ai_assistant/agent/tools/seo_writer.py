@@ -59,8 +59,6 @@ class SEOWriter(Tool):
         self.company_desciption = company_description
 
     def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
-        self.legal_params(json_query)
-
         messages = [
             {
                 "role": "system",

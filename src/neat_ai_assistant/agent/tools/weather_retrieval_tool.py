@@ -9,6 +9,7 @@ from ..tool import Tool, ToolParam, ToolResult
 try:
     from geopy.geocoders import Nominatim  # type: ignore
     from geopy.location import Location  # type: ignore
+
     GEOPY_AVAILABLE = True
 except:
     GEOPY_AVAILABLE = False
@@ -148,10 +149,10 @@ class WeatherRetrievalTool(Tool):
         return self._build_weather_result(relevant_weather_info, city_info)
 
     def _run(self, json_query: Mapping[str, Any]) -> ToolResult:
-        self.legal_params(json_query)
-
         if not GEOPY_AVAILABLE:
-            raise RuntimeError("This tool requires 'geopy'. Please install the extra 'tool-extension'.")
+            raise RuntimeError(
+                "This tool requires 'geopy'. Please install the extra 'tool-extension'."
+            )
 
         coordinates = self._get_coordinates(json_query["location"])
         if coordinates is None:
